@@ -1,0 +1,113 @@
+.sidebar {
+  width: 260px;
+  background-color: #070b19;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100; /* नेवबार से ऊपर रखने के लिए थोड़ा बढ़ाया */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* स्मूथ एनिमेशन */
+}
+
+.sidebar-logo-section {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.sidebar-menu-wrapper {
+  flex: 1;
+  padding: 20px 14px;
+  overflow-y: auto; /* सिर्फ मेन्यू स्क्रॉल होगा, पूरा पेज नहीं */
+}
+
+.menu-group {
+  margin-bottom: 24px;
+}
+
+.group-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  padding-left: 12px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.group-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #ffffff;
+}
+
+.sidebar-item.active .sidebar-link {
+  background-color: rgba(37, 99, 235, 0.15);
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   मोबाइल और टैबलेट के लिए फिक्स (1024px और उससे कम)
+ /* ==========================================================================
+   मोबाइल और टैबलेट के लिए फिक्स (1024px और उससे कम)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .sidebar {
+    top: 70px !important; /* नेवबार के ठीक नीचे से शुरू होगा */
+    height: calc(100vh - 70px) !important; /* स्क्रीन की पूरी हाइट में से नेवबार की हाइट घटा दी */
+    transform: translateX(-100%); /* डिफ़ॉल्ट रूप से छिपा रहेगा */
+    position: fixed;
+    z-index: 100;
+  }
+  
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* बैकग्राउंड ओवरले को भी नेवबार के नीचे सेट करें */
+  .sidebar-overlay {
+    position: fixed;
+    top: 70px !important;
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 70px) !important;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 99;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

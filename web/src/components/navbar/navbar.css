@@ -1,0 +1,160 @@
+.navbar {
+  background-color: #070b19;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  height: 70px;
+  width: 100%;
+  position: relative;
+  z-index: 10; /* साइडबार से कम ताकि साइडबार मोबाइल पर इसके ऊपर आ सके, लेकिन डेस्कटॉप पर लेआउट सही रहे */
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 24px;
+}
+
+/* डेस्कटॉप व्यू में सर्च बार को साइडबार की चौड़ाई (260px) के आगे खिसकाने के लिए */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: 260px; /* साइडबार की चौड़ाई के बराबर मार्जिन */
+  transition: margin-left 0.3s ease;
+}
+
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  background-color: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 14px;
+  width: 320px;
+}
+
+.search-icon {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.search-input {
+  background: none;
+  border: none;
+  color: #ffffff;
+  padding-left: 10px;
+  width: 100%;
+  outline: none;
+  font-size: 14px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-action-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.nav-alert-icon {
+  position: relative;
+}
+
+.nav-alert-icon .badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 50%;
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
+/* ==========================================================================
+   मोबाइल और टैबलेट रिस्पॉन्सिव फिक्स (1024px और उससे कम)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .navbar-container {
+    padding: 0 16px; /* मोबाइल पर साइड्स में थोड़ी पैडिंग कम की */
+  }
+
+  .navbar-left {
+    margin-left: 0 !important; /* मोबाइल पर डेस्कटॉप वाला 260px का मार्जिन हटाया */
+    gap: 12px;
+  }
+
+  /* मोबाइल हैमबर्गर मेन्यू बटन */
+  .mobile-menu-btn {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 22px;
+    height: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 101; /* ताकि साइडबार खुलने पर भी बटन उसके ऊपर दिखे */
+  }
+
+  .mobile-menu-btn .bar {
+    width: 100%;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease; /* स्मूथ एनिमेशन के लिए */
+  }
+
+  /* जब साइडबार खुला हो (isSidebarOpen === true) तो 'X' बनने का एनिमेशन */
+  .mobile-menu-btn.open .bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .mobile-menu-btn.open .bar:nth-child(2) {
+    opacity: 0; /* बीच वाली लाइन गायब हो जाएगी */
+  }
+
+  .mobile-menu-btn.open .bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* मोबाइल पर सर्च बार की चौड़ाई ऑटो-एडजस्ट की */
+  .search-bar-container {
+    width: 180px !important;
+    padding: 6px 10px;
+  }
+
+  .search-input {
+    font-size: 13px;
+  }
+
+  .navbar-right {
+    gap: 12px; /* राइट साइड के आइकॉन के बीच का स्पेस कम किया */
+  }
+
+  /* बेहद छोटे मोबाइल (480px या उससे कम) के लिए स्पेशल फिक्स */
+  @media (max-width: 480px) {
+    .search-bar-container {
+      display: none; /* बहुत छोटी स्क्रीन पर सर्च बार छिप जाएगा ताकि बाकी बटन न कटें */
+    }
+  }
+}
