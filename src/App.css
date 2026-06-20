@@ -10,7 +10,7 @@
 
 body {
   background-color: #030712 !important; /* पूरा बैकग्राउंड गहरा डार्क रहेगा */
-  color: #f3f4f6;
+  color: #fcfcfcd0;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -341,4 +341,5 @@ body {
     grid-template-columns: 1fr !important;
     gap: 16px;
   }
+  
 }

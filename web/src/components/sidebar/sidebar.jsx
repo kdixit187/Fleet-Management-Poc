@@ -86,9 +86,27 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   <span className="icon">🔧</span> <span className="text">Maintenance Logs</span>
                 </Link>
               </li>
-              <li className={`sidebar-item ${isActive('/drivers')}`}>
+              {/* Driver Assignments List View */}
+              <li className={`sidebar-item ${isActive('/drivers') ? 'active' : ''}`}>
                 <Link to="/drivers" className="sidebar-link" onClick={handleLinkClick}>
-                  <span className="icon">🆔</span> <span className="text">Driver Assignments</span>
+                  <span className="icon">🆔</span>
+                  <span className="text">Driver Assignments</span>
+                </Link>
+              </li>
+
+              {/* New Driver Registration Form View */}
+              <li className={`sidebar-item ${isActive('/DriverRegister') ? 'active' : ''}`}>
+                {/* Link to path badal kar exact App.jsx wala path kar diya hai */}
+                <Link to="/DriverRegister" className="sidebar-link" onClick={handleLinkClick}>
+                  <span className="icon">➕</span> {/* Icon unique kar diya taaki confusion na ho */}
+                  <span className="text">Driver Register</span>
+                </Link>
+              </li>
+              <li className={`sidebar-item ${isActive('/drivershow') ? 'active' : ''}`}>
+                {/* Link to path ko capital se lowercase '/drivershow' kiya hai */}
+                <Link to="/drivershow" className="sidebar-link" onClick={handleLinkClick}>
+                  <span className="icon">📋</span> {/* Display list ke liye clear icon */}
+                  <span className="text">Driver List</span> {/* Menu text simple aur professional kiya */}
                 </Link>
               </li>
             </ul>
