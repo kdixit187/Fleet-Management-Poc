@@ -11,7 +11,7 @@ import DriverShow from "../web/src/pages/fleet managemeent/Drivershow.jsx";
 import DriverShipment from "../web/src/pages/fleet managemeent/Drivershipment.jsx";
 import VehicleList from "../web/src/pages/fleet managemeent/VehicleList.jsx";
 import MaintenanceLogs from "../web/src/pages/fleet managemeent/maintenancelogs.jsx";
-import AddVehicle from '../web/src/pages/fleet managemeent/add.jsx';
+import AddVehicle from '../web/src/pages/fleet managemeent/add-vehicle.jsx';
 import VeichleService from '../web/src/pages/fleet managemeent/veichleservice.jsx';
 import NewShipment from '../web/src/pages/fleet managemeent/newshipment.jsx';
 
