@@ -16,7 +16,7 @@ import AddVehicle from '../web/src/pages/fleet managemeent/add-vehicle.jsx';
 import VeichleService from '../web/src/pages/fleet managemeent/veichleservice.jsx';
 import NewShipment from '../web/src/pages/shipment/newshipment.jsx';
 import DelayedShipments from '../web/src/pages/shipment/delayedshipments.jsx';
-
+import Logout from '../web/src/pages/logout.jsx';
 // 📦 SHIPMENT MODULE IMPORTS
 import AllShipments from "../web/src/pages/shipment/allshipments.jsx"; 
 import Track from "../web/src/pages/shipment/track.jsx"; 
@@ -49,7 +49,7 @@ function App() {
         {/* 🎯 AUTHENTICATION MODULE */}
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<Sign />} />
-
+<Route path="/logout" element={<Logout />} />
         {/* 📊 CORE OPERATIONAL DASHBOARD */}
         <Route path="/dashboard" element={<DashboardLayout><Home /></DashboardLayout>} />
         <Route path="/live-map" element={<DashboardLayout><LiveMap /></DashboardLayout>} />
