@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
 
-// Yeh default export sahi hai
 export default function LiveMap() {
   const [selectedVehicle, setSelectedVehicle] = useState('TRK-4022');
-  // ... baaki ka aapka code ...
+  const [searchQuery, setSearchQuery] = useState('');
 
   const liveVehicles = [
     { id: 'TRK-4022', driver: 'Rajesh Kumar', route: 'Mumbai → Delhi', status: 'On Time', load: 'Electronic Items (14 Tons)', speed: '68 km/h', eta: '4 hrs' },
@@ -12,82 +12,334 @@ export default function LiveMap() {
     { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', status: 'Critical', load: 'Perishable Dairy (6 Tons)', speed: '0 km/h (Stopped)', eta: 'Unknown' },
   ];
 
+  // सर्च इनपुट के आधार पर ट्रक्स को फ़िल्टर करना
+  const filteredVehicles = liveVehicles.filter(truck => 
+    truck.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    truck.route.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    truck.driver.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const currentVehicleData = liveVehicles.find(v => v.id === selectedVehicle) || liveVehicles[0];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Live Shipment Fleet Map</h1>
-        <p className="text-sm text-slate-500 mt-1">Real-time GPS telemetry tracks and route tracking management.</p>
-      </div>
+    <PageWrapper>
+      {/* Title Section */}
+      <HeaderSection>
+        <h1>Live Shipment Fleet Map</h1>
+        <p>Real-time GPS telemetry tracks and route tracking management.</p>
+      </HeaderSection>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <ContentGrid>
         {/* Left Sidebar: Truck List */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs h-[500px] flex flex-col">
-          <div className="p-4 bg-slate-50 border-b border-slate-200">
+        <SidebarCard>
+          <SearchBoxWrapper>
             <input 
               type="text" 
               placeholder="Search active trucks, routes..." 
-              className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
-          <div className="divide-y divide-slate-100 overflow-y-auto flex-1">
-            {liveVehicles.map((truck) => (
-              <button
+          </SearchBoxWrapper>
+          
+          <TruckListContainer>
+            {filteredVehicles.map((truck) => (
+              <TruckButton
                 key={truck.id}
+                type="button"
+                isActive={selectedVehicle === truck.id}
                 onClick={() => setSelectedVehicle(truck.id)}
-                className={`w-full p-4 text-left flex justify-between items-start transition-colors ${
-                  selectedVehicle === truck.id ? 'bg-blue-50/70 border-l-4 border-blue-600' : 'hover:bg-slate-50'
-                }`}
               >
                 <div>
-                  <div className="font-mono font-bold text-slate-900">{truck.id}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{truck.route}</div>
-                  <div className="text-xs text-slate-400 mt-1">Driver: {truck.driver}</div>
+                  <div className="truck-id">{truck.id}</div>
+                  <div className="truck-route">{truck.route}</div>
+                  <div className="truck-driver">Driver: {truck.driver}</div>
                 </div>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                  truck.status === 'On Time' ? 'bg-emerald-50 text-emerald-700' :
-                  truck.status === 'Delayed' ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
-                }`}>
+                <StatusLabel status={truck.status}>
                   {truck.status}
-                </span>
-              </button>
+                </StatusLabel>
+              </TruckButton>
             ))}
-          </div>
-        </div>
+            {filteredVehicles.length === 0 && (
+              <p style={{ padding: '20px', color: '#64748b', fontSize: '13px', textAlign: 'center' }}>No active trucks found</p>
+            )}
+          </TruckListContainer>
+        </SidebarCard>
 
         {/* Right Section: Visual Map Engine Simulator */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-[#0f172a] rounded-xl border border-slate-800 h-[340px] relative overflow-hidden flex items-center justify-center text-slate-500">
-            <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-            
-            <div className="absolute top-1/2 left-1/4 w-1/2 h-1 bg-dashed border-t-2 border-blue-500/40"></div>
-            <div className="absolute top-1/2 left-2/3 w-3 h-3 rounded-full bg-blue-500 animate-ping"></div>
-            <div className="absolute top-1/2 left-2/3 w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow-md"></div>
+        <MapAndHUDWrapper>
+          <MapCanvasEngine>
+            <div className="grid-overlay"></div>
+            <div className="route-dashed-line"></div>
+            <div className="ping-effect"></div>
+            <div className="live-pointer"></div>
 
-            <p className="z-10 text-xs font-mono tracking-wider text-slate-400 bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-700">
+            <p className="engine-status-tag">
               📍 [MAP RENDERING CANVAS ENGINE Active for {currentVehicleData.id}]
             </p>
-          </div>
+          </MapCanvasEngine>
 
           {/* Telemetry Status HUD */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-4 shadow-xs">
-            <div>
-              <p className="text-xs text-slate-400 font-medium uppercase">Active Speed</p>
-              <p className="text-lg font-bold text-slate-800 mt-0.5">{currentVehicleData.speed}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400 font-medium uppercase">Est. Arrival Time</p>
-              <p className="text-lg font-bold text-slate-800 mt-0.5">{currentVehicleData.eta}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-xs text-slate-400 font-medium uppercase">Manifest Load</p>
-              <p className="text-sm font-semibold text-slate-700 mt-1 truncate">{currentVehicleData.load}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          <TelemetryHUD>
+            <HUDGroup>
+              <p className="hud-label">Active Speed</p>
+              <p className="hud-value">{currentVehicleData.speed}</p>
+            </HUDGroup>
+            <HUDGroup>
+              <p className="hud-label">Est. Arrival Time</p>
+              <p className="hud-value">{currentVehicleData.eta}</p>
+            </HUDGroup>
+            <HUDGroup className="col-span-2">
+              <p className="hud-label">Manifest Load</p>
+              <p className="hud-load-value">{currentVehicleData.load}</p>
+            </HUDGroup>
+          </TelemetryHUD>
+        </MapAndHUDWrapper>
+      </ContentGrid>
+    </PageWrapper>
   );
-};
-// export default LiveMap;
+}
+
+/* ---------------- Responsive Styled Components ---------------- */
+
+const PageWrapper = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-top: 94px; /* नेवबार के ओवरलैप को रोकने के लिए फिक्स पैडिंग */
+  font-family: sans-serif;
+
+  @media (max-width: 1024px) {
+    padding: 16px 12px;
+    padding-top: 86px;
+  }
+`;
+
+const HeaderSection = styled.div`
+  margin-bottom: 24px;
+  h1 {
+    font-size: 26px;
+    font-weight: bold;
+    color: #f02501;
+    margin: 0 0 6px 0;
+  }
+  p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+  }
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+`;
+
+const SidebarCard = styled.div`
+  background-color: #0b1329;
+  border-radius: 16px;
+  border: 1px solid #1e293b;
+  overflow: hidden;
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+`;
+
+const SearchBoxWrapper = styled.div`
+  padding: 16px;
+  background-color: #0f172a;
+  border-bottom: 1px solid #1e293b;
+
+  input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 13px;
+    background-color: #0b1329;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #ffffff;
+    outline: none;
+    box-sizing: border-box;
+    
+    &:focus {
+      border-color: #2563eb;
+    }
+  }
+`;
+
+const TruckListContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+`;
+
+const TruckButton = styled.button`
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  background-color: ${props => props.isActive ? 'rgba(37, 99, 235, 0.12)' : 'transparent'};
+  border: none;
+  border-left: 4px solid ${props => props.isActive ? '#2563eb' : 'transparent'};
+  border-bottom: 1px solid #1e293b;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${props => props.isActive ? 'rgba(37, 99, 235, 0.12)' : '#111c3a'};
+  }
+
+  .truck-id { font-family: monospace; font-weight: bold; color: #ffffff; font-size: 14px; }
+  .truck-route { font-size: 12px; color: #38bdf8; margin-top: 4px; font-weight: 500; }
+  .truck-driver { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+`;
+
+const StatusLabel = styled.span`
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background-color: ${props => 
+    props.status === 'On Time' ? 'rgba(16, 185, 129, 0.15)' : 
+    props.status === 'Delayed' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)'};
+  color: ${props => 
+    props.status === 'On Time' ? '#34d399' : 
+    props.status === 'Delayed' ? '#fbbf24' : '#f87171'};
+`;
+
+const MapAndHUDWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const MapCanvasEngine = styled.div`
+  background-color: #0f172a;
+  border-radius: 16px;
+  border: 1px solid #1e293b;
+  height: 340px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    background-image: linear-gradient(to right, #808080 1px, transparent 1px), linear-gradient(to bottom, #808080 1px, transparent 1px);
+    background-size: 24px_24px;
+  }
+
+  .route-dashed-line {
+    position: absolute;
+    top: 50%;
+    left: 25%;
+    width: 40%;
+    height: 2px;
+    border-top: 2px dashed rgba(56, 189, 248, 0.4);
+  }
+
+  .ping-effect {
+    position: absolute;
+    top: 50%;
+    left: 65%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #38bdf8;
+    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+    @keyframes ping {
+      75%, 100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+    }
+  }
+
+  .live-pointer {
+    position: absolute;
+    top: 50%;
+    left: 65%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #38bdf8;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px #38bdf8;
+  }
+
+  .engine-status-tag {
+    z-index: 10;
+    font-size: 12px;
+    font-family: monospace;
+    tracking-width: 0.05em;
+    color: #cbd5e1;
+    background-color: rgba(11, 19, 41, 0.9);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+  }
+`;
+
+const TelemetryHUD = styled.div`
+  background-color: #0b1329;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #1e293b;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+
+  .col-span-2 { grid-column: span 2; }
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    .col-span-2 { grid-column: span 1; }
+  }
+`;
+
+const HUDGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .hud-label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  .hud-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .hud-load-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #38bdf8;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`;

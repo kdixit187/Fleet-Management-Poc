@@ -4,8 +4,9 @@ import Navbar from "../web/src/components/navbar/navbar.jsx";
 import Sidebar from "../web/src/components/sidebar/sidebar.jsx";
 import Home from "../web/src/pages/Home.jsx";  
 import LiveMap from "../web/src/pages/live-map.jsx";
+import FleetStatus from "../web/src/pages/fleetstatus.jsx"; // 🟢 Fleet Status कॉम्पोनेंट
 
-// 🚛 FLEET MANAGEMENT MODULE IMPORTS
+// 🚛 FLEET MANAGEMENT MODULE IMPORTS (Sourced exactly from your actual folder)
 import DriverRegister from "../web/src/pages/fleet managemeent/DriverRegister.jsx"; 
 import DriverShow from "../web/src/pages/fleet managemeent/Drivershow.jsx";
 import DriverShipment from "../web/src/pages/fleet managemeent/Drivershipment.jsx";
@@ -28,7 +29,7 @@ import './App.css';
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // 🚀 Dynamic Master Shell Container (Sirf Dashboard pages par layout toggle karega)
+  // 🚀 Dynamic Master Shell Container (Dashboard pages layout)
   const DashboardLayout = ({ children }) => (
     <div className="app-container">
       <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
@@ -62,18 +63,17 @@ function App() {
         <Route path="/fleet" element={<DashboardLayout><VehicleList /></DashboardLayout>} />
         <Route path="/add-vehicle" element={<DashboardLayout><AddVehicle /></DashboardLayout>} /> 
         <Route path="/maintenance" element={<DashboardLayout><MaintenanceLogs /></DashboardLayout>} />
-        <Route path="/fleet-status" element={<DashboardLayout><Home /></DashboardLayout>} />
-        <Route path="/vehicle-service" element={<DashboardLayout><VeichleService /></DashboardLayout>} /> {/* 🟢 ADDED: व्हीकल सर्विस का नया रूट */}
-         {/* <Route path="/new-shipment" element={<DashboardLayout><VeichleService /></DashboardLayout>} /> */}
+        <Route path="/vehicle-service" element={<DashboardLayout><VeichleService /></DashboardLayout>} /> 
+        <Route path="/fleet-status" element={<DashboardLayout><FleetStatus /></DashboardLayout>} /> {/* 🟢 FIXED: अब यहाँ सही FleetStatus कॉम्पोनेंट रेंडर होगा */}
         
         {/* 📦 SHIPMENTS MANAGEMENT MODULE */}
         <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
         <Route path="/delayed" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
         <Route path="/track" element={<DashboardLayout><Track /></DashboardLayout>} />
-        {/* <Route path="/create-shipment" element={<DashboardLayout><AddVehicle /></DashboardLayout>} />  */}
-        {/* 🟢 FIXED: दोनों असाइनमेंट और क्रिएशन पाथ्स पर सही न्यू शिपमेंट कंपोनेंट लोड किया */}
-        {/* <Route path="/new-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} /> */}
-        <Route path="/create-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} />
+        
+        {/* Shipment Assignment Routes */}
+        <Route path="/new-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} />
+        <Route path="/create-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} /> 
       </Routes>
     </Router>
   );
