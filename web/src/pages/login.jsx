@@ -74,9 +74,9 @@ const Form = () => {
         </form>
 
         {/* --- यहाँ Sign up को Link से बदल दिया गया है --- */}
-        <p className="sign-up-label">
+        {/* <p className="sign-up-label">
           Don't have an account? <Link to="/signup" className="sign-up-link">Sign up</Link>
-        </p>
+        </p> */}
 
         <div className="separator">
           <span>or continue with</span>

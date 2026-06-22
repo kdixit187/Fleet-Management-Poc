@@ -146,7 +146,7 @@ const StyledWrapper = styled.div`
   padding: 20px;
   /* --- बैकग्राउंड इमेज सेटिंग्स --- */
   background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
-                    url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop');
+                    url('https://images.unsplash.com/photo-1559297434-fae8a1916a79?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bG9naXN0aWN8ZW58MHx8MHx8fDA%3D');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

@@ -22,7 +22,7 @@ export default function DriverShipment() {
                 </div>
                 
                 {/* 🚀 FIXED: Wrapped with Router Link for clean interactive screen navigation */}
-                <Link to="/app.jsx" style={{ textDecoration: 'none' }}>
+                <Link to="/add-vehicle" style={{ textDecoration: 'none' }}>
                     <button 
                         type="button" 
                         style={{ 

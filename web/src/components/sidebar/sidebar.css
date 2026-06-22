@@ -8,8 +8,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 100; /* नेवबार से ऊपर रखने के लिए थोड़ा बढ़ाया */
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* स्मूथ एनिमेशन */
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-logo-section {
@@ -30,7 +30,8 @@
 .sidebar-menu-wrapper {
   flex: 1;
   padding: 20px 14px;
-  overflow-y: auto; /* सिर्फ मेन्यू स्क्रॉल होगा, पूरा पेज नहीं */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* मोबाइल ब्राउज़रों पर स्मूथ मोमेंटम स्क्रॉलिंग के लिए */
 }
 
 .menu-group {
@@ -62,6 +63,7 @@
   font-size: 14px;
   font-weight: 500;
   border-radius: 6px;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .sidebar-link:hover {
@@ -77,14 +79,12 @@
 
 /* ==========================================================================
    मोबाइल और टैबलेट के लिए फिक्स (1024px और उससे कम)
- /* ==========================================================================
-   मोबाइल और टैबलेट के लिए फिक्स (1024px और उससे कम)
    ========================================================================== */
 @media (max-width: 1024px) {
   .sidebar {
-    top: 70px !important; /* नेवबार के ठीक नीचे से शुरू होगा */
-    height: calc(100vh - 70px) !important; /* स्क्रीन की पूरी हाइट में से नेवबार की हाइट घटा दी */
-    transform: translateX(-100%); /* डिफ़ॉल्ट रूप से छिपा रहेगा */
+    top: 70px !important;
+    height: calc(100vh - 70px) !important;
+    transform: translateX(-100%);
     position: fixed;
     z-index: 100;
   }
@@ -94,7 +94,6 @@
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
   }
 
-  /* बैकग्राउंड ओवरले को भी नेवबार के नीचे सेट करें */
   .sidebar-overlay {
     position: fixed;
     top: 70px !important;
@@ -104,6 +103,7 @@
     background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(3px);
     z-index: 99;
+    animation: fadeIn 0.2s ease-out;
   }
 }
 

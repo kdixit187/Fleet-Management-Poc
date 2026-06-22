@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './sidebar.css';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const location = useLocation();
+  
+  // पाथ मैचिंग को क्लीन रखने के लिए हेल्पर फ़ंक्शन
   const isActive = (path) => location.pathname === path ? 'active' : '';
+
+  // मोबाइल पर साइडबार खुलने पर बैकग्राउंड स्क्रॉल को रोकने के लिए प्रभाव (UX Fix)
+  useEffect(() => {
+    if (isSidebarOpen && window.innerWidth <= 1024) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isSidebarOpen]);
 
   const handleLinkClick = () => {
     if (window.innerWidth <= 1024) {
@@ -14,12 +26,14 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
   return (
     <>
-      {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
+      {isSidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+      )}
 
       <aside className={`sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
         {/* लोगो सेक्शन */}
         <div className="sidebar-logo-section">
-          <Link to="/" className="sidebar-logo">CargoMax</Link>
+          <Link to="/" className="sidebar-logo" onClick={handleLinkClick}>CargoMax</Link>
         </div>
 
         <div className="sidebar-menu-wrapper">
@@ -31,17 +45,17 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <Link to="/dashboard" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📊</span> <span className="text">Overview</span>
                 </Link>
-              </li>
+              </li> {/* 🟢 FIXED: Changing </td> to </li> */}
               <li className={`sidebar-item ${isActive('/live-map')}`}>
                 <Link to="/live-map" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">🗺️</span> <span className="text">Live Shipment Map</span>
                 </Link>
-              </li>
+              </li> {/* 🟢 FIXED */}
               <li className={`sidebar-item ${isActive('/fleet-status')}`}>
                 <Link to="/fleet-status" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📈</span> <span className="text">Fleet Status</span>
                 </Link>
-              </li>
+              </li> {/* 🟢 FIXED */}
             </ul>
           </div>
 
@@ -53,22 +67,22 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <Link to="/shipments" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📦</span> <span className="text">All Shipments</span>
                 </Link>
-              </li>
+              </li> {/* 🟢 FIXED */}
               <li className={`sidebar-item ${isActive('/track')}`}>
                 <Link to="/track" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📍</span> <span className="text">Track Shipment</span>
                 </Link>
-              </li>
+              </li> {/* 🟢 FIXED */}
               <li className={`sidebar-item ${isActive('/create-shipment')}`}>
                 <Link to="/create-shipment" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">➕</span> <span className="text">Create Shipment</span>
                 </Link>
-              </li>
+              </li> {/* 🟢 FIXED */}
               <li className={`sidebar-item ${isActive('/delayed')}`}>
                 <Link to="/delayed" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">🕒</span> <span className="text">Delayed Shipments</span>
                 </Link>
-              </li>
+              </li> {/* 🟢 FIXED */}
             </ul>
           </div>
 
@@ -86,27 +100,19 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   <span className="icon">🔧</span> <span className="text">Maintenance Logs</span>
                 </Link>
               </li>
-              {/* Driver Assignments List View */}
-              <li className={`sidebar-item ${isActive('/drivers') ? 'active' : ''}`}>
+              <li className={`sidebar-item ${isActive('/drivers')}`}>
                 <Link to="/drivers" className="sidebar-link" onClick={handleLinkClick}>
-                  <span className="icon">🆔</span>
-                  <span className="text">Driver Assignments</span>
+                  <span className="icon">🆔</span> <span className="text">Driver Assignments</span>
                 </Link>
               </li>
-
-              {/* New Driver Registration Form View */}
-              <li className={`sidebar-item ${isActive('/DriverRegister') ? 'active' : ''}`}>
-                {/* Link to path badal kar exact App.jsx wala path kar diya hai */}
+              <li className={`sidebar-item ${isActive('/DriverRegister')}`}>
                 <Link to="/DriverRegister" className="sidebar-link" onClick={handleLinkClick}>
-                  <span className="icon">➕</span> {/* Icon unique kar diya taaki confusion na ho */}
-                  <span className="text">Driver Register</span>
+                  <span className="icon">➕</span> <span className="text">Driver Register</span>
                 </Link>
               </li>
-              <li className={`sidebar-item ${isActive('/drivershow') ? 'active' : ''}`}>
-                {/* Link to path ko capital se lowercase '/drivershow' kiya hai */}
+              <li className={`sidebar-item ${isActive('/drivershow')}`}>
                 <Link to="/drivershow" className="sidebar-link" onClick={handleLinkClick}>
-                  <span className="icon">📋</span> {/* Display list ke liye clear icon */}
-                  <span className="text">Driver List</span> {/* Menu text simple aur professional kiya */}
+                  <span className="icon">📋</span> <span className="text">Driver List</span>
                 </Link>
               </li>
             </ul>
