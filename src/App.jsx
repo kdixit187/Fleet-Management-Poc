@@ -6,26 +6,24 @@ import Home from "../web/src/pages/admin/dashboard/Home.jsx";
 import LiveMap from "../web/src/pages/admin/dashboard/live-map.jsx";
 import FleetStatus from "../web/src/pages/admin/dashboard/fleetstatus.jsx"; 
 
-// 🚛 FLEET MANAGEMENT MODULE IMPORTS
-import DriverRegister from "../web/src/pages/admin/fleet managemeent/driverregister.js"; 
-import DriverShow from "../web/src/pages/admin/fleet managemeent/driverlist.js";
+// 🚛 FLEET MANAGEMENT MODULE IMPORTS (Extensions fixed to .jsx)
+import DriverRegister from "../web/src/pages/admin/fleet managemeent/driverregister.jsx"; 
+import DriverShow from "../web/src/pages/admin/fleet managemeent/driverlist.jsx";
 import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx";
 import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
 import MaintenanceLogs from "../web/src/pages/admin/fleet managemeent/maintenancelogs.jsx";
 import AddVehicle from '../web/src/pages/admin/fleet managemeent/add-vehicle.jsx';
 import VeichleService from '../web/src/pages/admin/fleet managemeent/veichleservice.jsx';
+
+// 📦 SHIPMENT MODULE IMPORTS (Extensions fixed to .jsx)
 import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx';
 import DelayedShipments from '../web/src/pages/admin/shipment/delayedshipments.jsx';
-import Logout from '../web/src/pages/logout.jsx';
-
-// 🟢 FIXED: Settings component ka path theek kiya (Apne exact folder ke hisab se rename kar lena agar Settings.jsx ho)
-import Settings from '../web/src/pages/admin/Settings.jsx'; 
-
-// 📦 SHIPMENT MODULE IMPORTS
-import AllShipments from "../web/src/pages/admin/shipment/allshipments.js"; 
+import AllShipments from "../web/src/pages/admin/shipment/allshipments.jsx"; 
 import Track from "../web/src/pages/admin/shipment/track.jsx"; 
 
-// 🔐 AUTHENTICATION IMPORTS
+// 🔐 AUTHENTICATION & SETTINGS IMPORTS
+import Logout from '../web/src/pages/logout.jsx';
+import Settings from '../web/src/pages/admin/Settings.jsx'; 
 import Login from '../web/src/pages/Login.jsx';
 import Sign from '../web/src/pages/Sign.jsx';
 
@@ -81,7 +79,7 @@ function App() {
         <Route path="/new-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} />
         <Route path="/create-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} /> 
 
-        {/* 🟢 FIXED: Settings Route add kiya taaki menu click functional ho jaye */}
+        {/* 🟢 SETTINGS MODULE */}
         <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
       </Routes>
     </Router>
