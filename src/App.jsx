@@ -2,19 +2,20 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from "../web/src/components/navbar/navbar.jsx";
 import Sidebar from "../web/src/components/sidebar/sidebar.jsx";
-import Home from "../web/src/pages/Home.jsx";  
-import LiveMap from "../web/src/pages/live-map.jsx";
-import FleetStatus from "../web/src/pages/fleetstatus.jsx"; // 🟢 Fleet Status कॉम्पोनेंट
+import Home from "../web/src/pages/dashboard/Home.jsx";  
+import LiveMap from "../web/src/pages/dashboard/live-map.jsx";
+import FleetStatus from "../web/src/pages/dashboard/fleetstatus.jsx"; 
 
-// 🚛 FLEET MANAGEMENT MODULE IMPORTS (Sourced exactly from your actual folder)
-import DriverRegister from "../web/src/pages/fleet managemeent/DriverRegister.jsx"; 
-import DriverShow from "../web/src/pages/fleet managemeent/Drivershow.jsx";
-import DriverShipment from "../web/src/pages/fleet managemeent/Drivershipment.jsx";
+// 🚛 FLEET MANAGEMENT MODULE IMPORTS
+import DriverRegister from "../web/src/pages/fleet managemeent/driverregister.jsx"; 
+import DriverShow from "../web/src/pages/fleet managemeent/driverlist.jsx";
+import DriverShipment from "../web/src/pages/fleet managemeent/driverassigment.jsx";
 import VehicleList from "../web/src/pages/fleet managemeent/VehicleList.jsx";
 import MaintenanceLogs from "../web/src/pages/fleet managemeent/maintenancelogs.jsx";
 import AddVehicle from '../web/src/pages/fleet managemeent/add-vehicle.jsx';
 import VeichleService from '../web/src/pages/fleet managemeent/veichleservice.jsx';
-import NewShipment from '../web/src/pages/fleet managemeent/newshipment.jsx';
+import NewShipment from '../web/src/pages/shipment/newshipment.jsx';
+import DelayedShipments from '../web/src/pages/shipment/delayedshipments.jsx';
 
 // 📦 SHIPMENT MODULE IMPORTS
 import AllShipments from "../web/src/pages/shipment/allshipments.jsx"; 
@@ -29,7 +30,7 @@ import './App.css';
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // 🚀 Dynamic Master Shell Container (Dashboard pages layout)
+  // 🚀 Dynamic Master Shell Container
   const DashboardLayout = ({ children }) => (
     <div className="app-container">
       <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
@@ -64,11 +65,14 @@ function App() {
         <Route path="/add-vehicle" element={<DashboardLayout><AddVehicle /></DashboardLayout>} /> 
         <Route path="/maintenance" element={<DashboardLayout><MaintenanceLogs /></DashboardLayout>} />
         <Route path="/vehicle-service" element={<DashboardLayout><VeichleService /></DashboardLayout>} /> 
-        <Route path="/fleet-status" element={<DashboardLayout><FleetStatus /></DashboardLayout>} /> {/* 🟢 FIXED: अब यहाँ सही FleetStatus कॉम्पोनेंट रेंडर होगा */}
+        <Route path="/fleet-status" element={<DashboardLayout><FleetStatus /></DashboardLayout>} /> 
         
         {/* 📦 SHIPMENTS MANAGEMENT MODULE */}
         <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
-        <Route path="/delayed" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
+        
+        {/* 🟢 FIXED: Ab /delayed par sahi DelayedShipments component open hoga */}
+        <Route path="/delayed" element={<DashboardLayout><DelayedShipments /></DashboardLayout>} />
+        
         <Route path="/track" element={<DashboardLayout><Track /></DashboardLayout>} />
         
         {/* Shipment Assignment Routes */}
