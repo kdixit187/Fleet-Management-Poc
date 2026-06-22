@@ -17,6 +17,10 @@ import VeichleService from '../web/src/pages/fleet managemeent/veichleservice.js
 import NewShipment from '../web/src/pages/shipment/newshipment.jsx';
 import DelayedShipments from '../web/src/pages/shipment/delayedshipments.jsx';
 import Logout from '../web/src/pages/logout.jsx';
+
+// 🟢 FIXED: Settings component ka path theek kiya (Apne exact folder ke hisab se rename kar lena agar Settings.jsx ho)
+import Settings from '../web/src/pages/admin/Settings.jsx'; 
+
 // 📦 SHIPMENT MODULE IMPORTS
 import AllShipments from "../web/src/pages/shipment/allshipments.jsx"; 
 import Track from "../web/src/pages/shipment/track.jsx"; 
@@ -49,7 +53,8 @@ function App() {
         {/* 🎯 AUTHENTICATION MODULE */}
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<Sign />} />
-<Route path="/logout" element={<Logout />} />
+        <Route path="/logout" element={<Logout />} />
+
         {/* 📊 CORE OPERATIONAL DASHBOARD */}
         <Route path="/dashboard" element={<DashboardLayout><Home /></DashboardLayout>} />
         <Route path="/live-map" element={<DashboardLayout><LiveMap /></DashboardLayout>} />
@@ -69,15 +74,15 @@ function App() {
         
         {/* 📦 SHIPMENTS MANAGEMENT MODULE */}
         <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
-        
-        {/* 🟢 FIXED: Ab /delayed par sahi DelayedShipments component open hoga */}
         <Route path="/delayed" element={<DashboardLayout><DelayedShipments /></DashboardLayout>} />
-        
         <Route path="/track" element={<DashboardLayout><Track /></DashboardLayout>} />
         
         {/* Shipment Assignment Routes */}
         <Route path="/new-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} />
         <Route path="/create-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} /> 
+
+        {/* 🟢 FIXED: Settings Route add kiya taaki menu click functional ho jaye */}
+        <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
       </Routes>
     </Router>
   );
