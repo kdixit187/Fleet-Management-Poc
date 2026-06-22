@@ -1,99 +1,299 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 
 export default function DriverShipment() {
-  // Main structural data for vehicle assignments matrix
-  const activeAssignments = [
-    { id: "ASN-9901", driver: "Rajesh Kumar", truck: "TRK-4022", cargo: "Electronics", destination: "Delhi", status: "In Transit" },
-    { id: "ASN-9902", driver: "Amit Sharma", truck: "TRK-8819", cargo: "Industrial Gears", destination: "Udaipur", status: "Loading" },
-    { id: "ASN-9903", driver: "Vikram Singh", truck: "TRK-1092", cargo: "Textile Fabric", destination: "Bhilwara", status: "Dispatched" }
-  ];
+    // 🚛 ड्राइवर और शिपमेंट असाइनमेंट का लाइव डेटा मैट्रिक्स
+    const activeAssignments = [
+        { SRno: "1", Comapnyname: "Kartikey Lodha", truckmodelname: "TRK-4022", numberplate: "rj06pa6666", cargo: "Industrial Gears", destination: "Udaipur", status: "In Transit" },
+        { SRno: "2", Comapnyname: "Ramesh Chandra", truckmodelname: "TRK-1092", numberplate: "rj06pa1122", cargo: "Textile Fabric", destination: "Bhilwara", status: "Loading" },
+        { SRno: "3", Comapnyname: "Suresh Kumar", truckmodelname: "TRK-8819", numberplate: "rj06pa9988", cargo: "Electronics", destination: "Jaipur", status: "Dispatched" }
+    ];
 
-  return (
-    <div style={{ maxWidth: '1140px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      
-      {/* 1. Header Control System */}
-      <div style={{ display: 'flex', justifyContent: 'between', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h2 style={{ fontSize: '26px', fontWeight: 'bold', color: '#f02501', margin: '0 0 6px 0' }}>
-            Driver Shipments & Assignments
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748b', margin: '0' }}>
-            Monitor tactical driver allocations and manifest progress metrics.
-          </p>
-        </div>
-         <div className="header-buttons">
-          {/* <button type="button" className="btn btn-primary">
-            Add Vehicle
-          </button> */}
+    return (
+        <PageWrapper>
 
-          <button type="button" className="btn btn-success">
-            New Shipment
-          </button>
-        </div>
-      </div>
+            {/* 1. Header Control System Setup */}
+            <HeaderControl>
+                <TitleBlock>
+                    <h2>Driver Assignments</h2>
+                    <p>Monitor tactical driver allocations, active cargo manifests, and delivery progress metrics.</p>
+                </TitleBlock>
+                
+                {/* 🟢 LINKED: यह बटन अब आपके Create Shipment फ़ॉर्म पर नेविगेट करेगा */}
+                {/* <Link to="/new-shipment" style={{ textDecoration: 'none' }}>
+                                    <button 
+                                        type="button" 
+                                        style={{ 
+                                            backgroundColor: '#2563eb', 
+                                            color: '#ffffff', 
+                                            padding: '10px 20px', 
+                                            border: 'none', 
+                                            borderRadius: '10px', 
+                                            fontSize: '14px', 
+                                            fontWeight: 'bold', 
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)',
+                                            transition: 'background-color 0.15s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                                    >
+                                        ➕ Add shipment
+                                    </button>
+                                </Link> */}
+            </HeaderControl>
 
-      {/* 2. Stats Summary Ribbon (Mini Matrix Display) */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
-        <div style={{ flex: '1 1 200px', backgroundColor: '#0b1329', padding: '20px', borderRadius: '12px', color: '#fff', border: '1px solid #1e293b' }}>
-          <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 8px 0', textTransform: 'uppercase' }}>Active Assignments</p>
-          <span style={{ fontSize: '24px', fontWeight: 'bold' }}>{activeAssignments.length} Trucks</span>
-        </div>
-        <div style={{ flex: '1 1 200px', backgroundColor: '#0b1329', padding: '20px', borderRadius: '12px', color: '#fff', border: '1px solid #1e293b' }}>
-          <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 8px 0', textTransform: 'uppercase' }}>Fleet Operations</p>
-          <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#34d399' }}>100% Utility</span>
-        </div>
-      </div>
+            {/* 2. Stats Summary Ribbon */}
+            <StatsRibbon>
+                <StatCard>
+                    <p>Active Drivers On Road</p>
+                    <span>{activeAssignments.length} Drivers Assigned</span>
+                </StatCard>
+                <StatCard variant="success">
+                    <p>Manifest Efficiency</p>
+                    <span>100% Operational</span>
+                </StatCard>
+            </StatsRibbon>
 
-      {/* 3. Live Assignments Active Ledger Data Table */}
-      <div style={{ backgroundColor: '#0b1329', borderRadius: '16px', border: '1px solid #1e293b', overflow: 'hidden', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)' }}>
-        <div style={{ padding: '20px', borderBottom: '1px solid #1e293b', backgroundColor: '#0f172a' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#ffffff', margin: '0' }}>Live Duty Dispatch Ledger</h3>
-        </div>
-        
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px', color: '#cbd5e1' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#0f172a', borderBottom: '2px solid #1e293b', color: '#94a3b8', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <th style={{ padding: '16px 24px' }}>Assignment ID</th>
-                <th style={{ padding: '16px 24px' }}>Operator Name</th>
-                <th style={{ padding: '16px 24px' }}>Truck ID</th>
-                <th style={{ padding: '16px 24px' }}>Manifest Cargo</th>
-                <th style={{ padding: '16px 24px' }}>Destination</th>
-                <th style={{ padding: '16px 24px' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeAssignments.map((row) => (
-                <tr 
-                  key={row.id} 
-                  style={{ borderBottom: '1px solid #1e293b', transition: 'background 0.2s' }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#111c3a'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#0b1329'}
-                >
-                  <td style={{ padding: '16px 24px', fontFamily: 'monospace', fontWeight: 'bold', color: '#38bdf8' }}>{row.id}</td>
-                  <td style={{ padding: '16px 24px', fontWeight: '600', color: '#fff' }}>{row.driver}</td>
-                  <td style={{ padding: '16px 24px', color: '#94a3b8' }}>{row.truck}</td>
-                  <td style={{ padding: '16px 24px' }}>{row.cargo}</td>
-                  <td style={{ padding: '16px 24px', fontWeight: '500' }}>📍 {row.destination}</td>
-                  <td style={{ padding: '16px 24px' }}>
-                    <span style={{ 
-                      backgroundColor: row.status === 'In Transit' ? 'rgba(56, 189, 248, 0.15)' : row.status === 'Dispatched' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                      color: row.status === 'In Transit' ? '#38bdf8' : row.status === 'Dispatched' ? '#34d399' : '#fbbf24',
-                      padding: '4px 12px',
-                      borderRadius: '9999px',
-                      fontSize: '12px',
-                      fontWeight: '600'
-                    }}>
-                      ● {row.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            {/* 3. Live Assignments Ledger Data Table */}
+            <LedgerCard>
+                <LedgerHeader>
+                    <h3>Active Logistics Ledger</h3>
+                </LedgerHeader>
 
-    </div>
-  );
+                <TableResponsiveWrapper>
+                    <LedgerTable>
+                        <thead>
+                            <tr>
+                                <th>Sr.no</th>
+                                <th>Driver / Operator</th>
+                                <th>Truck Model</th>
+                                <th>Number Plate</th>
+                                <th>Cargo Material</th>
+                                <th>Destination</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {activeAssignments.map((row) => (
+                                <tr key={row.SRno}>
+                                    <td className="monospace color-slate">{row.SRno}</td>
+                                    <td className="font-semibold text-white">{row.Comapnyname}</td>
+                                    <td>{row.truckmodelname}</td>
+                                    <td className="monospace text-blue text-uppercase">{row.numberplate}</td>
+                                    <td>{row.cargo}</td>
+                                    <td className="font-semibold text-white">{row.destination}</td>
+                                    <td>
+                                        <StatusBadge status={row.status}>{row.status}</StatusBadge>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </LedgerTable>
+                </TableResponsiveWrapper>
+            </LedgerCard>
+
+        </PageWrapper>
+    );
 }
+
+/* ---------------- Responsive Styled Components ---------------- */
+
+const PageWrapper = styled.div`
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 94px;
+    font-family: sans-serif;
+
+    @media (max-width: 1024px) {
+        padding: 16px 12px;
+        padding-top: 86px;
+    }
+`;
+
+const HeaderControl = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        
+        a {
+            width: 100%;
+        }
+    }
+`;
+
+const TitleBlock = styled.div`
+    h2 {
+        font-size: 26px;
+        font-weight: bold;
+        color: #f02501;
+        margin: 0 0 6px 0;
+    }
+    p {
+        font-size: 14px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        h2 { font-size: 22px; }
+        p { font-size: 13px; }
+    }
+`;
+
+const AddButton = styled.button`
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    background-color: #2563eb;
+    transition: background-color 0.15s;
+    white-space: nowrap;
+
+    &:hover {
+        background-color: #1d4ed8;
+    }
+
+    @media (max-width: 768px) {
+        width: 100%;
+        padding: 14px;
+    }
+`;
+
+const StatsRibbon = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+`;
+
+const StatCard = styled.div`
+    flex: 1 1 200px;
+    background-color: #0b1329;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fff;
+    border: 1px solid #1e293b;
+
+    p {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 0 0 8px 0;
+        text-transform: uppercase;
+    }
+
+    span {
+        font-size: 24px;
+        font-weight: bold;
+        color: ${props => props.variant === 'success' ? '#34d399' : '#ffffff'};
+    }
+`;
+
+const LedgerCard = styled.div`
+    background-color: #0b1329;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+`;
+
+const LedgerHeader = styled.div`
+    padding: 20px;
+    border-bottom: 1px solid #1e293b;
+    background-color: #0f172a;
+
+    h3 {
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffffff;
+        margin: 0;
+    }
+`;
+
+const TableResponsiveWrapper = styled.div`
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+`;
+
+const LedgerTable = styled.table`
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+    color: #cbd5e1;
+
+    thead tr {
+        background-color: #0f172a;
+        border-bottom: 2px solid #1e293b;
+        color: #94a3b8;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    th, td {
+        padding: 16px 24px;
+        white-space: nowrap;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #1e293b;
+        &:hover {
+            background-color: #111c3a;
+        }
+    }
+
+    .monospace { font-family: monospace; }
+    .color-slate { color: #94a3b8; }
+    .font-semibold { font-weight: 600; }
+    .text-white { color: #fff; }
+    .text-blue { color: #38bdf8; }
+    .text-uppercase { text-transform: uppercase; }
+
+    @media (max-width: 768px) {
+        th, td {
+            padding: 12px 16px;
+        }
+    }
+`;
+
+const StatusBadge = styled.span`
+    background-color: ${props => 
+        props.status === 'In Transit' ? 'rgba(56,189,248,0.15)' : 
+        props.status === 'Loading' ? 'rgba(251,191,36,0.15)' : 'rgba(52,211,153,0.15)'};
+    color: ${props => 
+        props.status === 'In Transit' ? '#38bdf8' : 
+        props.status === 'Loading' ? '#fbbf24' : '#34d399'};
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    
+    &::before {
+        content: "●";
+        margin-right: 6px;
+        font-size: 10px;
+    }
+`;

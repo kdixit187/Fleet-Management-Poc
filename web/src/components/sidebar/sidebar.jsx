@@ -33,7 +33,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       <aside className={`sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
         {/* लोगो सेक्शन */}
         <div className="sidebar-logo-section">
-          <Link to="/" className="sidebar-logo" onClick={handleLinkClick}>CargoMax</Link>
+          <Link to="/" className="sidebar-logo" onClick={handleLinkClick}>KArtikey</Link>
         </div>
 
         <div className="sidebar-menu-wrapper">

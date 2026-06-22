@@ -13,6 +13,7 @@ import VehicleList from "../web/src/pages/fleet managemeent/VehicleList.jsx";
 import MaintenanceLogs from "../web/src/pages/fleet managemeent/maintenancelogs.jsx";
 import AddVehicle from '../web/src/pages/fleet managemeent/add.jsx';
 import VeichleService from '../web/src/pages/fleet managemeent/veichleservice.jsx';
+import NewShipment from '../web/src/pages/fleet managemeent/newshipment.jsx';
 
 // 📦 SHIPMENT MODULE IMPORTS
 import AllShipments from "../web/src/pages/shipment/allshipments.jsx"; 
@@ -63,12 +64,16 @@ function App() {
         <Route path="/maintenance" element={<DashboardLayout><MaintenanceLogs /></DashboardLayout>} />
         <Route path="/fleet-status" element={<DashboardLayout><Home /></DashboardLayout>} />
         <Route path="/vehicle-service" element={<DashboardLayout><VeichleService /></DashboardLayout>} /> {/* 🟢 ADDED: व्हीकल सर्विस का नया रूट */}
+         {/* <Route path="/new-shipment" element={<DashboardLayout><VeichleService /></DashboardLayout>} /> */}
         
         {/* 📦 SHIPMENTS MANAGEMENT MODULE */}
         <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
         <Route path="/delayed" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
         <Route path="/track" element={<DashboardLayout><Track /></DashboardLayout>} />
-        <Route path="/create-shipment" element={<DashboardLayout><AddVehicle /></DashboardLayout>} /> 
+        {/* <Route path="/create-shipment" element={<DashboardLayout><AddVehicle /></DashboardLayout>} />  */}
+        {/* 🟢 FIXED: दोनों असाइनमेंट और क्रिएशन पाथ्स पर सही न्यू शिपमेंट कंपोनेंट लोड किया */}
+        {/* <Route path="/new-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} /> */}
+        <Route path="/create-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} />
       </Routes>
     </Router>
   );
