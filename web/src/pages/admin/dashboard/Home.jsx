@@ -1,177 +1,472 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // 🟢 FIXED: Link का इंपोर्ट जोड़ा गया
-import './Home.css';
+import styled from 'styled-components';
 
-const Home = () => {
+export default function HomeDashboard() {
+  const recentShipments = [
+    { id: '#TRK-8902', destination: 'Mumbai Hub', driver: 'Rajesh Kumar', initials: 'RK', status: 'In Transit', eta: '14:30 PM', statusType: 'transit' },
+    { id: '#TRK-8903', destination: 'Delhi Terminus', driver: 'Amit Singh', initials: 'AS', status: 'Delayed', eta: '17:45 PM', statusType: 'delayed' },
+    { id: '#TRK-8904', destination: 'Bangalore WH', driver: 'Vijay Yadav', initials: 'VY', status: 'Loading', eta: 'Tomorrow', statusType: 'loading' },
+    { id: '#TRK-8905', destination: 'Chennai Port', driver: 'Suresh Reddy', initials: 'SR', status: 'Delivered', eta: '09:15 AM', statusType: 'delivered' },
+  ];
+
+  const logEntries = [
+    { id: 1, type: 'delivered', text: 'Shipment #TRK-8901 Delivered', detail: 'Cleared terminal gateway', time: '10 mins ago' },
+    { id: 2, type: 'alert', text: 'Route Hazard Alert', detail: 'Heavy traffic delay on NH-48 for #TRK-8903', time: '34 mins ago' },
+    { id: 3, type: 'dispatch', text: 'New Dispatch Scheduled', detail: 'Assigned Driver Vijay Yadav', time: '1 hour ago' },
+    { id: 4, type: 'maintenance', text: 'Vehicle #VH-203 Maintained', detail: 'Service completed at workshop', time: '2 hours ago' },
+  ];
+
   return (
-    <div className="dashboard-overview">
-      <div className="dashboard-header">
+    <DashboardWrapper>
+      {/* Top Header Section */}
+      <HeaderSection>
         <div>
-          <h2>Dashboard Overview</h2>
-          <p>
-            Welcome back! Here's what's happening with your logistics operations.
-          </p>
+          <h1>Overview Dashboard</h1>
+          <p>Real-time summary of your fleet operations</p>
         </div>
+        <ActionButtons>
+          {/* <button className="btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button> */}
+          <button className="btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export
+          </button>
+          <button className="btn-primary">+ New Shipment</button>
+        </ActionButtons>
+      </HeaderSection>
 
-        <div className="header-buttons" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {/* 🟢 FIXED: Add Vehicle बटन को साफ और बिना अनबाउंड कंपोनेंट के लिंक किया */}
-          <Link to="/add-vehicle" style={{ textDecoration: 'none' }}>
-            <button type="button" className="btn btn-primary" style={{
-              backgroundColor: '#2563eb',
-              color: '#ffffff',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}>
-              ➕ Add Vehicle
-            </button>
-          </Link>
+      {/* Metrics Row */}
+      <MetricsGrid>
+        <MetricCard>
+          <IconCircle color="#eff6ff" stroke="#2563eb">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </IconCircle>
+          <div>
+            <span className="card-label">Active Shipments</span>
+            <span className="card-value">42</span>
+            <span className="card-trend trend-up">↑ 12% from yesterday</span>
+          </div>
+        </MetricCard>
 
-          {/* 🟢 FIXED: New Shipment बटन को आपके नए क्रिएट शिपमेंट रूट से कनेक्ट किया */}
-          <Link to="/create-shipment" style={{ textDecoration: 'none' }}>
-            <button type="button" className="btn btn-success" style={{
-              backgroundColor: '#10b981',
-              color: '#ffffff',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}>
-              📦 New Shipment
-            </button>
-          </Link>
-        </div>
-      </div>
+        <MetricCard>
+          <IconCircle color="#f0fdf4" stroke="#16a34a">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </IconCircle>
+          <div>
+            <span className="card-label">Vehicles En Route</span>
+            <span className="card-value">38 <span className="sub-value">/ 45</span></span>
+            <span className="card-trend text-muted">84% utilization</span>
+          </div>
+        </MetricCard>
 
-      <div className="stats-grid">
-        {/* कार्ड 1 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Active Shipments</span>
-            <div className="card-icon-wrapper icon-blue">🚛</div>
+        <MetricCard>
+          <IconCircle color="#fef2f2" stroke="#dc2626">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+          </IconCircle>
+          <div>
+            <span className="card-label">Alerts / Delays</span>
+            <span className="card-value value-danger">3</span>
+            <span className="card-trend trend-down">↑ 2 new today</span>
           </div>
-          <div className="stat-number">42</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-up">↑ 12%</span>
-            <span className="trend-text">Currently in transit</span>
-          </div>
-        </div>
+        </MetricCard>
 
-        {/* कार्ड 2 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Delivered Today</span>
-            <div className="card-icon-wrapper icon-green">📦</div>
+        <MetricCard>
+          <IconCircle color="#fffbeb" stroke="#d97706">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </IconCircle>
+          <div>
+            <span className="card-label">Delivered Today</span>
+            <span className="card-value">18</span>
+            <span className="card-trend trend-up">↑ 5 more than yesterday</span>
           </div>
-          <div className="stat-number">28</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-up">↑ 8%</span>
-            <span className="trend-text">Successful deliveries</span>
-          </div>
-        </div>
+        </MetricCard>
+      </MetricsGrid>
 
-        {/* कार्ड 3 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Pending Orders</span>
-            <div className="card-icon-wrapper icon-orange">⏳</div>
+      {/* Main Splitscreen Content */}
+      <ContentGrid>
+        {/* Recent Shipments Table Container */}
+        <TableCard>
+          <div className="card-header">
+            <h2>Recent Shipments</h2>
+            <a href="#view-all" className="view-all-link">View All <span>&gt;</span></a>
           </div>
-          <div className="stat-number">156</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-down">↓ 5%</span>
-            <span className="trend-text">Awaiting processing</span>
-          </div>
-        </div>
+          <TableResponsiveWrapper>
+            <ShipmentsTable>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Destination</th>
+                  <th>Driver</th>
+                  <th>Status</th>
+                  <th>ETA</th>
+                  <th style={{ textAlign: 'center' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentShipments.map((shipment) => (
+                  <tr key={shipment.id}>
+                    <td className="font-mono">{shipment.id}</td>
+                    <td>{shipment.destination}</td>
+                    <td>
+                      <DriverCell>
+                        <Avatar>{shipment.initials}</Avatar>
+                        {shipment.driver}
+                      </DriverCell>
+                    </td>
+                    <td>
+                      <StatusBadge type={shipment.statusType}>
+                        {shipment.status}
+                      </StatusBadge>
+                    </td>
+                    <td className={shipment.statusType === 'delayed' ? 'text-danger font-bold' : (shipment.statusType === 'delivered' ? 'text-success font-bold' : 'font-bold')}>
+                      {shipment.eta}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <IconButton aria-label="View Details">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </IconButton>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </ShipmentsTable>
+          </TableResponsiveWrapper>
+        </TableCard>
 
-        {/* कार्ड 4 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Revenue (MTD)</span>
-            <div className="card-icon-wrapper icon-green">₹</div>
+        {/* Live System Logs Panel */}
+        <LogsCard>
+          <div className="card-header">
+            <h2>Live System Logs</h2>
+            <LiveIndicator>● Live</LiveIndicator>
           </div>
-          <div className="stat-number">₹284,590</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-up">↑ +15%</span>
-            <span className="trend-text">Month to date</span>
-          </div>
-        </div>
-
-        {/* कार्ड 5 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Fleet Utilization</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up h-4 w-4" aria-hidden="true" stroke="green">
-              <path d="M16 7h6v6"></path>
-              <path d="m22 7-8.5 8.5-5-5L2 17"></path>
-            </svg>
-          </div>
-          <div className="stat-number">87%</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-up">↑ +3%</span>
-            <span className="trend-text">Vehicle efficiency</span>
-          </div>
-        </div>
-
-        {/* कार्ड 6 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Active Clients</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users h-4 w-4" aria-hidden="true" stroke="green">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-            </svg>
-          </div>
-          <div className="stat-number">1247</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-up">↑ +23%</span>
-            <span className="trend-text">Total active clients</span>
-          </div>
-        </div>
-
-        {/* कार्ड 7 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Warehouse Capacity</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-warehouse h-4 w-4" aria-hidden="true" stroke="red">
-              <path d="M18 21V10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v11"></path>
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 1.132-1.803l7.95-3.974a2 2 0 0 1 1.837 0l7.948 3.974A2 2 0 0 1 22 8z"></path>
-              <path d="M6 13h12"></path>
-              <path d="M6 17h12"></path>
-            </svg>
-          </div>
-          <div className="stat-number">72%</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-down">↓ -2%</span>
-            <span className="trend-text">Average utilization</span>
-          </div>
-        </div>
-
-        {/* कार्ड 8 */}
-        <div className="stat-card">
-          <div className="card-top">
-            <span className="card-title">Delayed Shipments</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-triangle-alert h-4 w-4" aria-hidden="true" stroke="red">
-              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path>
-              <path d="M12 9v4"></path>
-              <path d="M12 17h.01"></path>
-            </svg>
-          </div>
-          <div className="stat-number">7</div>
-          <div className="card-bottom">
-            <span className="trend-badge trend-down">↓ -12%</span>
-            <span className="trend-text">Requiring attention</span>
-          </div>
-        </div>
-      </div>
-    </div>
+          <LogsList>
+            {logEntries.map((log) => (
+              <LogItem key={log.id}>
+                <LogDot type={log.type} />
+                <LogContent>
+                  <p className="log-title">{log.text}</p>
+                  <p className="log-subtitle">{log.detail} • {log.time}</p>
+                </LogContent>
+              </LogItem>
+            ))}
+          </LogsList>
+        </LogsCard>
+      </ContentGrid>
+    </DashboardWrapper>
   );
-};
+}
 
-export default Home;
+/* ---------------- Layout & Layout Core Styles ---------------- */
+
+const DashboardWrapper = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+`;
+
+const HeaderSection = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+  }
+  p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+  }
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 8px;
+
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    &:hover { background-color: #f1f5f9; }
+  }
+
+  .btn-primary {
+    background-color: #2563eb;
+    border: 1px solid #2563eb;
+    color: #ffffff;
+    &:hover { background-color: #1d4ed8; }
+  }
+`;
+
+/* ---------------- KPI Metric Cards ---------------- */
+
+const MetricsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+`;
+
+const MetricCard = styled.div`
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+
+  .card-label {
+    display: block;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .card-value {
+    display: block;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1;
+    margin-bottom: 8px;
+    
+    .sub-value {
+      font-size: 16px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+  }
+  .value-danger { color: #dc2626; }
+  
+  .card-trend {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .trend-up { color: #16a34a; }
+  .trend-down { color: #dc2626; }
+  .text-muted { color: #64748b; }
+`;
+
+const IconCircle = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background-color: ${props => props.color};
+  color: ${props => props.stroke};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+/* ---------------- Grid Split Layout ---------------- */
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+`;
+
+/* ---------------- Recent Shipment Module ---------------- */
+
+const TableCard = styled.div`
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    h2 { font-size: 16px; font-weight: 600; color: #1e293b; margin: 0; }
+    .view-all-link {
+      font-size: 13px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+      &:hover { text-decoration: underline; }
+    }
+  }
+`;
+
+const TableResponsiveWrapper = styled.div`
+  overflow-x: auto;
+  width: 100%;
+`;
+
+const ShipmentsTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+
+  th {
+    color: #64748b;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+  }
+
+  .font-mono { font-family: monospace; font-size: 13px; color: #1e293b; font-weight: 600; }
+  .font-bold { font-weight: 600; }
+  .text-danger { color: #dc2626; }
+  .text-success { color: #16a34a; }
+`;
+
+const DriverCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const Avatar = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #64748b;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+`;
+
+const StatusBadge = styled.span`
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  
+  background-color: ${props => 
+    props.type === 'transit' ? '#ecfdf5' : 
+    props.type === 'delayed' ? '#fffbeb' : 
+    props.type === 'loading' ? '#e0f2fe' : '#f0fdf4'};
+    
+  color: ${props => 
+    props.type === 'transit' ? '#059669' : 
+    props.type === 'delayed' ? '#d97706' : 
+    props.type === 'loading' ? '#0284c7' : '#16a34a'};
+`;
+
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  &:hover { color: #475569; background-color: #f1f5f9; }
+`;
+
+/* ---------------- Logs Module ---------------- */
+
+const LogsCard = styled.div`
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    h2 { font-size: 16px; font-weight: 600; color: #1e293b; margin: 0; }
+  }
+`;
+
+const LiveIndicator = styled.span`
+  background-color: #f0fdf4;
+  color: #16a34a;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const LogsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const LogItem = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f8fafc;
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+`;
+
+const LogDot = styled.div`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+  
+  background-color: ${props => 
+    props.type === 'delivered' ? '#16a34a' : 
+    props.type === 'alert' ? '#dc2626' : 
+    props.type === 'dispatch' ? '#2563eb' : '#16a34a'};
+`;
+
+const LogContent = styled.div`
+  .log-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 2px 0;
+  }
+  .log-subtitle {
+    font-size: 11px;
+    color: #64748b;
+    margin: 0;
+  }
+`;
