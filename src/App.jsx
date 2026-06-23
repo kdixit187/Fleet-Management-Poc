@@ -7,8 +7,7 @@ import LiveMap from "../web/src/pages/admin/dashboard/live-map.jsx";
 import FleetStatus from "../web/src/pages/admin/dashboard/fleetstatus.jsx";
 
 // 🚛 FLEET MANAGEMENT MODULE IMPORTS (Fixed folder typo 'fleet managemeent')
-// Note: If driverregister.jsx doesn't exist yet, comment it out to prevent errors.
-// Change "fleet management" to "fleet managemeent" to match your actual folder
+
 import DriverShow from "../web/src/pages/admin/fleet managemeent/driverlist.jsx";
 import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx"; // Check if your file is 'driverassigment' (missing the second 'n')
 import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
