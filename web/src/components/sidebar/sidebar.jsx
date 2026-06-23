@@ -104,12 +104,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <Link to="/drivers" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">🆔</span> <span className="text">Driver Assignments</span>
                 </Link>
-              </li>
-              <li className={`sidebar-item ${isActive('/DriverRegister')}`}>
-                <Link to="/DriverRegister" className="sidebar-link" onClick={handleLinkClick}>
-                  <span className="icon">➕</span> <span className="text">Driver Register</span>
-                </Link>
-              </li>
+              </li> 
               <li className={`sidebar-item ${isActive('/drivershow')}`}>
                 <Link to="/drivershow" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📋</span> <span className="text">Driver List</span>

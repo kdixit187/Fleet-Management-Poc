@@ -2,32 +2,30 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from "../web/src/components/navbar/navbar.jsx";
 import Sidebar from "../web/src/components/sidebar/sidebar.jsx";
-import Home from "../web/src/pages/admin/dashboard/Home.jsx";  
+import Home from "../web/src/pages/admin/dashboard/Home.jsx";
 import LiveMap from "../web/src/pages/admin/dashboard/live-map.jsx";
-import FleetStatus from "../web/src/pages/admin/dashboard/fleetstatus.jsx"; 
+import FleetStatus from "../web/src/pages/admin/dashboard/fleetstatus.jsx";
 
-// 🚛 FLEET MANAGEMENT MODULE IMPORTS (Extensions fixed to .jsx)
-import DriverRegister from "../web/src/pages/admin/fleet managemeent/driverregister.jsx"; 
+// 🚛 FLEET MANAGEMENT MODULE IMPORTS (Fixed folder typo 'fleet managemeent')
+// Note: If driverregister.jsx doesn't exist yet, comment it out to prevent errors.
+// Change "fleet management" to "fleet managemeent" to match your actual folder
 import DriverShow from "../web/src/pages/admin/fleet managemeent/driverlist.jsx";
-import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx";
+import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx"; // Check if your file is 'driverassigment' (missing the second 'n')
 import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
 import MaintenanceLogs from "../web/src/pages/admin/fleet managemeent/maintenancelogs.jsx";
-import AddVehicle from '../web/src/pages/admin/fleet managemeent/add-vehicle.jsx';
-import VeichleService from '../web/src/pages/admin/fleet managemeent/veichleservice.jsx';
-
-// 📦 SHIPMENT MODULE IMPORTS (Extensions fixed to .jsx)
+// 📦 SHIPMENT MODULE IMPORTS
 import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx';
 import DelayedShipments from '../web/src/pages/admin/shipment/delayedshipments.jsx';
 import AllShipments from "../web/src/pages/admin/shipment/allshipments.jsx"; 
 import Track from "../web/src/pages/admin/shipment/track.jsx"; 
 
-// 🔐 AUTHENTICATION & SETTINGS IMPORTS
+// 🔐 AUTHENTICATION & SETTINGS IMPORTS (Fixed lower-case filenames)
 import Logout from '../web/src/pages/logout.jsx';
-import Settings from '../web/src/pages/admin/Settings.jsx'; 
-import Login from '../web/src/pages/Login.jsx';
-import Sign from '../web/src/pages/Sign.jsx';
+import Settings from '../web/src/pages/admin/settings.jsx'; 
+import Login from '../web/src/pages/login.jsx';
+import Sign from '../web/src/pages/sign.jsx';
 
-import './App.css'; 
+import './App.css';
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -58,24 +56,16 @@ function App() {
         <Route path="/live-map" element={<DashboardLayout><LiveMap /></DashboardLayout>} />
 
         {/* 🚛 FLEET MANAGEMENT MODULE */}
-        {/* Driver Section */}
         <Route path="/drivers" element={<DashboardLayout><DriverShipment /></DashboardLayout>} />
-        <Route path="/DriverRegister" element={<DashboardLayout><DriverRegister /></DashboardLayout>} />
         <Route path="/drivershow" element={<DashboardLayout><DriverShow /></DashboardLayout>} />
-        
-        {/* Vehicle / Fleet Assets Section */}
         <Route path="/fleet" element={<DashboardLayout><VehicleList /></DashboardLayout>} />
-        <Route path="/add-vehicle" element={<DashboardLayout><AddVehicle /></DashboardLayout>} /> 
         <Route path="/maintenance" element={<DashboardLayout><MaintenanceLogs /></DashboardLayout>} />
-        <Route path="/vehicle-service" element={<DashboardLayout><VeichleService /></DashboardLayout>} /> 
         <Route path="/fleet-status" element={<DashboardLayout><FleetStatus /></DashboardLayout>} /> 
         
         {/* 📦 SHIPMENTS MANAGEMENT MODULE */}
         <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
         <Route path="/delayed" element={<DashboardLayout><DelayedShipments /></DashboardLayout>} />
         <Route path="/track" element={<DashboardLayout><Track /></DashboardLayout>} />
-        
-        {/* Shipment Assignment Routes */}
         <Route path="/new-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} />
         <Route path="/create-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} /> 
 
