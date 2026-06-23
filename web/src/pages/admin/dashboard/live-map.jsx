@@ -1,348 +1,686 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, { useState, useMemo } from 'react';
+import styled, { keyframes } from 'styled-components';
 
-export default function FleetStatusDashboard() {
+export default function LiveMap() {
   const [selectedVehicle, setSelectedVehicle] = useState('TRK-4022');
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const liveVehicles = [
-    { id: 'TRK-4022', driver: 'Rajesh Kumar', route: 'Mumbai → Delhi', status: 'On Time', load: 'Electronic Items (14 Tons)', speed: '68 km/h', eta: '4 hrs' },
-    { id: 'TRK-8819', driver: 'Amit Sharma', route: 'Jaipur → Udaipur', status: 'Delayed', load: 'Industrial Gears (22 Tons)', speed: '45 km/h', eta: '1.5 hrs' },
-    { id: 'TRK-1092', driver: 'Vikram Singh', route: 'Ahmedabad → Bhilwara', status: 'On Time', load: 'Textile Fabric (8 Tons)', speed: '72 km/h', eta: '35 mins' },
-    { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', status: 'Critical', load: 'Perishable Dairy (6 Tons)', speed: '0 km/h (Stopped)', eta: 'Unknown' },
+    { id: 'TRK-4022', driver: 'Rajesh Kumar', route: 'Mumbai → Delhi', startCity: 'Mumbai', endCity: 'Delhi', status: 'On Time', load: '14', speed: '68', eta: '4 hrs', pct: '65%' },
+    { id: 'TRK-8819', driver: 'Amit Sharma', route: 'Jaipur → Udaipur', startCity: 'Jaipur', endCity: 'Udaipur', status: 'Delayed', load: '18', speed: '52', eta: '5 hrs', pct: '40%', delayTime: '+2 hrs delay' },
+    { id: 'TRK-1092', driver: 'Vikram Singh', route: 'Ahmedabad → Bhilwara', startCity: 'Ahmedabad', endCity: 'Bhilwara', status: 'On Time', load: '12', speed: '72', eta: '2 hrs', pct: '75%' },
+    { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', startCity: 'Delhi', endCity: 'Chandigarh', status: 'Critical', load: '22', speed: '0', eta: 'N/A', pct: '25%', issue: '⚠️ Mechanical' },
   ];
 
-  // Filtering logic if needed for extensions
-  const filteredVehicles = liveVehicles.filter(truck => 
-    truck.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    truck.route.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    truck.driver.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Map trajectory dictionary configuration linking IDs to positions
+  const mapCoordinates = {
+    "TRK-4022": { top: "42%", left: "46%", path: "M 80 320 Q 240 120, 420 220 T 720 100", startPos: { bottom: "18%", left: "8%" }, endPos: { top: "18%", right: "12%" }, theme: "var(--primary)" },
+    "TRK-8819": { top: "58%", left: "32%", path: "M 120 150 L 320 340", startPos: { top: "30%", left: "15%" }, endPos: { bottom: "25%", left: "38%" }, theme: "var(--warning)" },
+    "TRK-1092": { top: "72%", left: "22%", path: "M 40 410 Q 120 380, 240 310", startPos: { bottom: "10%", left: "5%" }, endPos: { bottom: "35%", left: "28%" }, theme: "var(--success)" },
+    "TRK-5541": { top: "24%", left: "62%", path: "M 380 110 L 620 40", startPos: { top: "22%", left: "45%" }, endPos: { top: "10%", right: "25%" }, theme: "var(--danger)" }
+  };
+
+  // Synchronized search index and status tag filters pipeline
+  const filteredVehicles = useMemo(() => {
+    return liveVehicles.filter(truck => {
+      const query = searchQuery.toLowerCase().trim();
+      const matchesSearch = truck.id.toLowerCase().includes(query) || 
+                            truck.route.toLowerCase().includes(query) || 
+                            truck.driver.toLowerCase().includes(query);
+      
+      const normalizedStatus = truck.status.toLowerCase().replace(' ', '');
+      const matchesFilter = statusFilter === 'all' || normalizedStatus === statusFilter;
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [searchQuery, statusFilter]);
+
+  const currentVehicleData = liveVehicles.find(v => v.id === selectedVehicle) || liveVehicles[0];
+  const telemetry = mapCoordinates[currentVehicleData.id] || mapCoordinates["TRK-4022"];
+
+  // Total calculated metrics
+  const onTimeCount = liveVehicles.filter(v => v.status === 'On Time').length;
+  const delayedCount = liveVehicles.filter(v => v.status === 'Delayed').length;
+  const criticalCount = liveVehicles.filter(v => v.status === 'Critical').length;
 
   return (
-    <PageWrapper>
-      {/* Title Section */}
+    <ContainerWrapper>
+      {/* Title Header Section */}
       <HeaderSection>
-        <h2>Fleet Status Dashboard</h2>
-        <p>Real-time asset telemetry configurations, operational health metrics, and breakdown logs.</p>
+        <div>
+          <h2><i className="bi bi-map text-primary me-2"></i>Fleet Status Dashboard</h2>
+          <p>Real-time asset telemetry configurations, operational health metrics, and breakdown logs.</p>
+        </div>
+        <Toolbar>
+          {/* <button type="button" className="btn-outline" onClick={() => window.location.reload()}>
+            <i className="bi bi-arrow-repeat me-1"></i> Refresh
+          </button>
+          <button type="button" className="btn-primary">
+            <i className="bi bi-plus-lg me-1"></i> Add Vehicle
+          </button> */}
+        </Toolbar>
       </HeaderSection>
 
-      {/* KPI Index Row */}
-      <MetricsGrid>
-        <KpiCard border="#2563eb">
-          <p className="kpi-label">Total Assets Index</p>
-          <h3 className="kpi-value text-dark">124 Trucks</h3>
+      {/* KPI Index Metrics Summary Row */}
+      <MetricsRow>
+        <KpiCard border="var(--primary)">
+          <p className="kpi-title">Total Assets Index</p>
+          <h3>124 Trucks</h3>
         </KpiCard>
-
-        <KpiCard border="#16a34a">
-          <p className="kpi-label">Available (Ready)</p>
-          <h3 className="kpi-value text-success">74 Active</h3>
+        <KpiCard border="var(--success)">
+          <p className="kpi-title">Available (Ready)</p>
+          <h3 className="text-success">74 Active</h3>
         </KpiCard>
-
-        <KpiCard border="#0ea5e9">
-          <p className="kpi-label">In Transit (On Duty)</p>
-          <h3 className="kpi-value text-info">35 Fleet</h3>
+        <KpiCard border="var(--info)">
+          <p className="kpi-title">In Transit (On Duty)</p>
+          <h3 className="text-info">35 Fleet</h3>
         </KpiCard>
-
-        <KpiCard border="#eab308">
-          <p className="kpi-label">Under Maintenance</p>
-          <h3 className="kpi-value text-warning">15 Workshop</h3>
+        <KpiCard border="var(--warning)">
+          <p className="kpi-title">Under Maintenance</p>
+          <h3 className="text-warning">15 Workshop</h3>
         </KpiCard>
-      </MetricsGrid>
+      </MetricsRow>
 
-      {/* Main Content Split View */}
-      <ContentSplitGrid>
-        {/* Efficiency Utilization Card */}
-        <ContentCard>
-          <h4 className="card-title">Fleet Deployment Efficiency</h4>
-          <EfficiencyWrapper>
-            <CircularProgress>
-              <span className="percentage">88%</span>
-              <span className="subtext">Utilization</span>
-            </CircularProgress>
+      {/* Main Structural Framework Layout splits */}
+      <MainGridLayout>
+        {/* Left Side Navigation Panel Card */}
+        <SidebarCard>
+          <div className="card-header-custom">
+            <h6>
+              <i className="bi bi-truck me-2"></i>Active Vehicles
+              <span className="badge-pill">{filteredVehicles.length}</span>
+            </h6>
+            <span className="live-tag">
+              <span className="live-dot"></span> Live
+            </span>
+          </div>
 
-            <ProgressBarGroup>
-              <ProgressItem>
-                <div className="progress-label">
-                  <span>Available Assets</span>
-                  <span>60%</span>
-                </div>
-                <BarBase>
-                  <BarFill color="#16a34a" width="60%" />
-                </BarBase>
-              </ProgressItem>
+          <SidebarBody>
+            {/* Live Search Controls Group */}
+            <SearchGroupWrapper>
+              <span className="search-icon"><i className="bi bi-search"></i></span>
+              <input 
+                type="text" 
+                placeholder="Search active trucks, drivers..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button className="clear-btn" onClick={() => setSearchQuery('')}>
+                  <i className="bi bi-x-lg"></i>
+                </button>
+              )}
+            </SearchGroupWrapper>
 
-              <ProgressItem>
-                <div className="progress-label">
-                  <span>Active Deployment</span>
-                  <span>28%</span>
-                </div>
-                <BarBase>
-                  <BarFill color="#0ea5e9" width="28%" />
-                </BarBase>
-              </ProgressItem>
+            {/* Quick Status Filters Toggle Bar */}
+            <StatusToggleGroup>
+              <button className={statusFilter === 'all' ? 'active' : ''} onClick={() => setStatusFilter('all')}>All</button>
+              <button className={`btn-ontime ${statusFilter === 'ontime' ? 'active' : ''}`} onClick={() => setStatusFilter('ontime')}>
+                <i className="bi bi-check-circle me-1"></i> On Time
+              </button>
+              <button className={`btn-delayed ${statusFilter === 'delayed' ? 'active' : ''}`} onClick={() => setStatusFilter('delayed')}>
+                <i className="bi bi-clock me-1"></i> Delayed
+              </button>
+              <button className={`btn-critical ${statusFilter === 'critical' ? 'active' : ''}`} onClick={() => setStatusFilter('critical')}>
+                <i className="bi bi-exclamation-triangle me-1"></i> Critical
+              </button>
+            </StatusToggleGroup>
 
-              <ProgressItem>
-                <div className="progress-label">
-                  <span>Workshop Repair</span>
-                  <span>12%</span>
-                </div>
-                <BarBase>
-                  <BarFill color="#eab308" width="12%" />
-                </BarBase>
-              </ProgressItem>
-            </ProgressBarGroup>
-          </EfficiencyWrapper>
-        </ContentCard>
+            {/* Scrollable Vehicle Collection Group Component */}
+            <VehicleScrollListWrapper>
+              {filteredVehicles.map((truck) => {
+                const isActive = truck.id === selectedVehicle;
+                return (
+                  <VehicleItemButton 
+                    key={truck.id} 
+                    className={isActive ? 'active' : ''} 
+                    onClick={() => setSelectedVehicle(truck.id)}
+                  >
+                    <div className="item-top-row">
+                      <div className="truck-info-block">
+                        <i className={`bi bi-truck fs-4 icon-display ${truck.status === 'Delayed' ? 'text-warning' : truck.status === 'Critical' ? 'text-danger animate-flash' : ''}`}></i>
+                        <div>
+                          <div className="truck-id-txt">{truck.id}</div>
+                          <div className="route-lbl"><i className="bi bi-geo-alt me-1"></i>{truck.route}</div>
+                        </div>
+                      </div>
+                      <div className="status-eta-block">
+                        <span className={`badge-status ${truck.status === 'On Time' ? 'bg-success-subtle' : truck.status === 'Delayed' ? 'bg-warning-subtle' : 'bg-danger-subtle'}`}>
+                          {truck.status}
+                        </span>
+                        <div className="eta-lbl">{truck.status === 'Critical' ? truck.issue : `ETA: ${truck.eta}`}</div>
+                      </div>
+                    </div>
 
-        {/* Critical Alerts Card */}
-        <ContentCard>
-          <h4 className="card-title">Critical Fleet Alerts</h4>
-          <AlertsListGroup>
-            {/* Critical Alert Item */}
-            <AlertItem bg="rgba(239, 68, 68, 0.08)" border="#f87171">
-              <div className="alert-header">
-                <span className="truck-tag">TRK-4022</span>
-                <span className="alert-id">ALT-9082</span>
+                    {/* Completion Track Progress */}
+                    <div className="progress-container">
+                      <ProgressTrackBase>
+                        <ProgressBarFill 
+                          width={truck.pct} 
+                          color={truck.status === 'On Time' ? 'var(--success)' : truck.status === 'Delayed' ? 'var(--warning)' : 'var(--danger)'}
+                        />
+                      </ProgressTrackBase>
+                      <div className="progress-labels-row">
+                        <span>{truck.startCity}</span>
+                        <span>{truck.pct}</span>
+                        <span>{truck.endCity}</span>
+                      </div>
+                    </div>
+                  </VehicleItemButton>
+                );
+              })}
+              {filteredVehicles.length === 0 && <NoDataPlaceholder>No matching assets found.</NoDataPlaceholder>}
+            </VehicleScrollListWrapper>
+          </SidebarBody>
+
+          {/* Sticky Total Counters Summary Footer */}
+          <SidebarFooterMetricsGroup>
+            <div>
+              <span className="lbl">On Time</span>
+              <span className="val text-success">{onTimeCount}</span>
+            </div>
+            <div>
+              <span className="lbl">Delayed</span>
+              <span className="val text-warning">{delayedCount}</span>
+            </div>
+            <div>
+              <span className="lbl">Critical</span>
+              <span className="val text-danger">{criticalCount}</span>
+            </div>
+          </SidebarFooterMetricsGroup>
+        </SidebarCard>
+
+        {/* Right Side Visual Engine Canvas Render Card */}
+        <MapDisplayCard>
+          <CanvasContainer>
+            {/* Structural Vector Space Paths */}
+            <SvgViewSpace id="mapSvgCanvas">
+              <path 
+                d={telemetry.path}
+                stroke="url(#activeRouteGrad)" 
+                strokeWidth="4" 
+                fill="none" 
+                strokeDasharray="8 5"
+                strokeLinecap="round" 
+              />
+              <defs>
+                <linearGradient id="activeRouteGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+                  <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
+                </linearGradient>
+              </defs>
+            </SvgViewSpace>
+
+            {/* Coordinate Anchors Start and Stop */}
+            <MapAnchorNode style={telemetry.startPos}>
+              <PulseRadarPoint color="var(--success)" />
+              <div className="node-lbl">{currentVehicleData.startCity}</div>
+            </MapAnchorNode>
+
+            <MapAnchorNode style={telemetry.endPos}>
+              <PulseRadarPoint color="var(--danger)" />
+              <div className="node-lbl">{currentVehicleData.endCity}</div>
+            </MapAnchorNode>
+
+            {/* Interpolated Target Tracking Marker */}
+            <LiveVehicleMarker style={{ top: telemetry.top, left: telemetry.left }}>
+              <MarkerCircleIcon style={{ backgroundColor: telemetry.theme }}>
+                <i className="bi bi-truck text-white"></i>
+              </MarkerCircleIcon>
+              <div className="marker-id-tag">{currentVehicleData.id}</div>
+              <RadarEchoCircle style={{ color: telemetry.theme }} />
+            </LiveVehicleMarker>
+
+            {/* Visual Vector Grid Overlay Context background */}
+            <div className="grid-overlay"></div>
+            <div className="globe-ambient-backplate">
+              <i className="bi bi-globe"></i>
+            </div>
+          </CanvasContainer>
+
+          {/* Telemetry HUD Control Data Bar Row */}
+          <TelemetryControlFooterBar>
+            <div className="profile-identity-pane">
+              <div className="icon-badge-box">
+                <i className="bi bi-radar fs-3"></i>
               </div>
-              <p className="alert-message">Engine Coolant Temperature Exceeded Critical Threshold (115°C)</p>
-              <div className="alert-footer">
-                <span className="location">📍 NH-48, Near Jaipur Bypass</span>
-                <span className="status-pill badge-danger">Critical</span>
+              <div>
+                <div className="pane-truck-id">{currentVehicleData.id}</div>
+                <div className="pane-driver-name">{currentVehicleData.driver}</div>
               </div>
-            </AlertItem>
+            </div>
 
-            {/* Warning Alert Item */}
-            <AlertItem bg="rgba(234, 179, 8, 0.08)" border="#facc15">
-              <div className="alert-header">
-                <span className="truck-tag">TRK-1092</span>
-                <span className="alert-id">ALT-1104</span>
+            <HudTelemetryValuesGrid>
+              <div className="hud-metric-unit-item">
+                <span className="lbl">Current Speed</span>
+                <span className="val">{currentVehicleData.speed} <span className="unit">km/h</span></span>
               </div>
-              <p className="alert-message">Sudden Brake Pad Wear Sensor Telemetry Warning Triggered</p>
-              <div className="alert-footer">
-                <span className="location">📍 Bhilwara Industrial Area</span>
-                <span className="status-pill badge-warning">Warning</span>
+              <div className="hud-metric-unit-item border-left-split">
+                <span className="lbl">Timeline ETA</span>
+                <span className="val text-success">{currentVehicleData.eta.replace(' hrs', '')} <span className="unit">hrs</span></span>
               </div>
-            </AlertItem>
-          </AlertsListGroup>
-        </ContentCard>
-      </ContentSplitGrid>
-    </PageWrapper>
+              <div className="hud-metric-unit-item border-left-split">
+                <span className="lbl">Net Load Capacity</span>
+                <span className="val">{currentVehicleData.load} <span className="unit">tons</span></span>
+              </div>
+            </HudTelemetryValuesGrid>
+          </TelemetryControlFooterBar>
+        </MapDisplayCard>
+      </MainGridLayout>
+    </ContainerWrapper>
   );
 }
 
-/* ---------------- Styled Components Core Layout ---------------- */
+/* ---------------- Styled Components Design Variables ---------------- */
 
-const PageWrapper = styled.div`
-  max-width: 1400px;
+const alphaBlink = keyframes`
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+`;
+
+const pulseRing = keyframes`
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+`;
+
+const ContainerWrapper = styled.div`
+  --primary: #2563eb;
+  --success: #16a34a;
+  --warning: #eab308;
+  --danger: #dc2626;
+  --info: #0ea5e9;
+  
+  max-width: 1440px;
   margin: 0 auto;
   padding: 24px;
   background-color: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  min-height: 100vh;
 `;
 
 const HeaderSection = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
-  h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 6px 0;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  h2 { font-size: 24px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; }
+  p { font-size: 14px; color: #64748b; margin: 0; }
+`;
+
+const Toolbar = styled.div`
+  display: flex;
+  gap: 12px;
+
+  button {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
   }
-  p {
-    font-size: 14px;
-    color: #64748b;
-    margin: 0;
+  .btn-outline {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    &:hover { background: #f1f5f9; }
+  }
+  .btn-primary {
+    background: var(--primary);
+    border: 1px solid var(--primary);
+    color: #ffffff;
+    &:hover { background: #1d4ed8; }
   }
 `;
 
-const MetricsGrid = styled.div`
+const MetricsRow = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 20px;
   margin-bottom: 24px;
-
-  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 992px) { grid-template-columns: repeat(2, 1fr); }
   @media (max-width: 576px) { grid-template-columns: 1fr; }
 `;
 
 const KpiCard = styled.div`
   background: #ffffff;
+  padding: 16px 20px;
   border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   border-left: 4px solid ${props => props.border};
 
-  .kpi-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 6px 0;
-  }
-  .kpi-value {
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0;
-  }
-  .text-dark { color: #1e293b; }
-  .text-success { color: #16a34a; }
-  .text-info { color: #0ea5e9; }
-  .text-warning { color: #d97706; }
+  .kpi-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin: 0 0 4px 0; }
+  h3 { font-size: 20px; font-weight: 700; margin: 0; color: #1e293b; }
+  .text-success { color: var(--success); }
+  .text-info { color: var(--info); }
+  .text-warning { color: var(--warning); }
 `;
 
-const ContentSplitGrid = styled.div`
+const MainGridLayout = styled.div`
   display: grid;
-  grid-template-columns: 5fr 7fr;
+  grid-template-columns: 4fr 8fr;
   gap: 24px;
-
-  @media (max-width: 992px) { grid-template-columns: 1fr; }
+  @media (max-width: 1200px) { grid-template-columns: 1fr; }
 `;
 
-const ContentCard = styled.div`
+/* ---------------- Sidebar Navigation Area ---------------- */
+
+const SidebarCard = styled.div`
   background: #ffffff;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-
-  .card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 20px 0;
-  }
-`;
-
-/* ---------------- Efficiency Visual Section ---------------- */
-
-const EfficiencyWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-`;
-
-const CircularProgress = styled.div`
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background: #f8fafc;
-  border: 3px solid #2563eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  height: 600px;
+  overflow: hidden;
 
-  .percentage {
-    font-size: 22px;
-    font-weight: 700;
-    color: #2563eb;
-    line-height: 1;
-  }
-  .subtext {
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 2px;
-  }
-`;
-
-const ProgressBarGroup = styled.div`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-`;
-
-const ProgressItem = styled.div`
-  .progress-label {
+  .card-header-custom {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
-    font-weight: 500;
-    color: #64748b;
-    margin-bottom: 6px;
-    span:last-child { color: #1e293b; font-weight: 600; }
+    align-items: center;
+
+    h6 { font-size: 15px; font-weight: 700; margin: 0; color: #1e293b; }
+    .badge-pill { background: var(--primary); color: #ffffff; padding: 2px 8px; border-radius: 20px; font-size: 11px; margin-left: 8px; }
+    .live-tag { font-size: 12px; color: #64748b; display: inline-flex; align-items: center; gap: 6px; }
+    .live-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: ${alphaBlink} 1.5s infinite; }
   }
 `;
 
-const BarBase = styled.div`
-  width: 100%;
-  height: 8px;
-  background-color: #f1f5f9;
-  border-radius: 9999px;
+const SidebarBody = styled.div`
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   overflow: hidden;
 `;
 
-const BarFill = styled.div`
-  height: 100%;
-  background-color: ${props => props.color};
-  width: ${props => props.width};
-  border-radius: 9999px;
+const SearchGroupWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  margin-bottom: 12px;
+
+  .search-icon { padding-left: 12px; color: #94a3b8; display: flex; align-items: center; }
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+    border: none;
+    outline: none;
+    color: #1e293b;
+    background: transparent;
+  }
+  .clear-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding-right: 12px; &:hover { color: #475569; } }
 `;
 
-/* ---------------- Alerts Section ---------------- */
+const StatusToggleGroup = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  &::-webkit-scrollbar { height: 0px; }
 
-const AlertsListGroup = styled.div`
+  button {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+
+    &:hover { background: #f8fafc; }
+    &.active { background: #64748b; border-color: #64748b; color: #ffffff; }
+  }
+  .btn-ontime.active { background: var(--success); border-color: var(--success); }
+  .btn-delayed.active { background: var(--warning); border-color: var(--warning); }
+  .btn-critical.active { background: var(--danger); border-color: var(--danger); }
+`;
+
+const VehicleScrollListWrapper = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  padding-right: 2px;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 `;
 
-const AlertItem = styled.div`
-  border: 1px solid ${props => props.border};
-  background-color: ${props => props.bg};
-  border-radius: 6px;
-  padding: 16px;
+const VehicleItemButton = styled.div`
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  .alert-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .truck-tag {
-    background: #1e293b;
+  &:hover { transform: translateX(4px); background-color: #f8fafc; }
+
+  &.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: #ffffff;
-    font-family: monospace;
-    font-size: 12px;
+    border-color: #1e40af;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+
+    .truck-id-txt, .icon-display, .route-lbl, .driver-lbl, .eta-lbl { color: #ffffff !important; }
+    .route-lbl, .driver-lbl, .eta-lbl { opacity: 0.85; }
+  }
+
+  .item-top-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .truck-info-block { display: flex; gap: 12px; align-items: flex-start; }
+  .truck-id-txt { font-size: 15px; font-weight: 700; color: #1e293b; }
+  .route-lbl { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .driver-lbl { font-size: 12px; color: #64748b; margin-top: 6px; }
+  
+  .status-eta-block { text-align: right; }
+  .badge-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .bg-success-subtle { background: #dcfce7; color: #15803d; }
+  .bg-warning-subtle { background: #fef9c3; color: #a16207; }
+  .bg-danger-subtle { background: #fee2e2; color: #b91c1c; }
+  .eta-lbl { font-size: 12px; color: #475569; margin-top: 6px; font-weight: 500; }
+
+  .progress-container { margin-top: 12px; }
+  .progress-labels-row { display: flex; justify-content: space-between; font-size: 11px; opacity: 0.7; margin-top: 4px; }
+`;
+
+const ProgressTrackBase = styled.div`
+  width: 100%;
+  height: 4px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  .active & { background: rgba(255,255,255,0.25); }
+`;
+
+const ProgressBarFill = styled.div`
+  height: 100%;
+  width: ${props => props.width};
+  background-color: ${props => props.color};
+  .active & { background-color: #ffffff; }
+`;
+
+const SidebarFooterMetricsGroup = styled.div`
+  padding: 12px 16px;
+  border-top: 1px solid #f1f5f9;
+  background: #fafafa;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-center: center;
+
+  div { display: flex; flex-direction: column; align-items: center; }
+  .lbl { font-size: 11px; color: #64748b; font-weight: 500; }
+  .val { font-size: 14px; font-weight: 700; margin-top: 2px; }
+`;
+
+const NoDataPlaceholder = styled.p`
+  font-size: 13px; color: #64748b; text-align: center; padding: 24px 0; margin: 0;
+`;
+
+/* ---------------- Right Map Visualization Engine Area ---------------- */
+
+const MapDisplayCard = styled.div`
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+`;
+
+const CanvasContainer = styled.div`
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  position: relative;
+  flex-grow: 1;
+  overflow: hidden;
+
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .globe-ambient-backplate {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    opacity: 0.04;
+    font-size: 9rem;
+    pointer-events: none;
+  }
+`;
+
+const SvgViewSpace = styled.svg`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+`;
+
+const MapAnchorNode = styled.div`
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .node-lbl {
+    color: rgba(255,255,255,0.6);
+    font-size: 11px;
     font-weight: 600;
-    padding: 3px 8px;
+    margin-top: 6px;
+    background: rgba(0,0,0,0.3);
+    padding: 2px 6px;
     border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   }
-  .alert-id {
-    font-family: monospace;
-    font-size: 12px;
-    font-weight: 600;
-    color: #64748b;
-  }
-  .alert-message {
-    font-size: 13px;
-    font-weight: 500;
-    color: #1e293b;
-    margin: 0 0 12px 0;
-  }
-  .alert-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    padding-top: 10px;
-  }
-  .location {
-    font-size: 12px;
-    color: #475569;
-    font-weight: 500;
-  }
-  .status-pill {
+`;
+
+const PulseRadarPoint = styled.span`
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: ${props => props.color};
+  box-shadow: 0 0 12px ${props => props.color};
+`;
+
+const LiveVehicleMarker = styled.div`
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+
+  .marker-id-tag {
+    color: #ffffff;
     font-size: 11px;
     font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 9999px;
-    text-transform: uppercase;
+    margin-top: 4px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   }
-  .badge-danger { background-color: #dc2626; color: #ffffff; }
-  .badge-warning { background-color: #eab308; color: #1e293b; }
+`;
+
+const MarkerCircleIcon = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+`;
+
+const RadarEchoCircle = styled.div`
+  position: absolute;
+  top: 32%; left: 50%;
+  width: 50px; height: 50px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  animation: ${pulseRing} 2.5s ease-out infinite;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+`;
+
+const TelemetryControlFooterBar = styled.div`
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .profile-identity-pane { display: flex; align-items: center; gap: 14px; }
+  .icon-badge-box { background: rgba(37,99,235,0.1); color: var(--primary); padding: 8px 12px; border-radius: 8px; }
+  .pane-truck-id { font-size: 16px; font-weight: 700; color: #1e293b; }
+  .pane-driver-name { font-size: 13px; color: #64748b; margin-top: 2px; }
+`;
+
+const HudTelemetryValuesGrid = styled.div`
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: flex-end;
+  
+  @media (max-width: 768px) { justify-content: space-between; width: 100%; }
+
+  .hud-metric-unit-item {
+    display: flex;
+    flex-direction: column;
+    padding: 0 24px;
+    
+    &:last-child { padding-right: 0; }
+  }
+  .border-left-split { border-left: 1px solid #e2e8f0; }
+
+  .lbl { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.02em; }
+  .val { font-size: 18px; font-weight: 700; color: #1e293b; margin-top: 4px; }
+  .unit { font-size: 13px; font-weight: 500; color: #64748b; }
+  .text-success { color: var(--success); }
 `;

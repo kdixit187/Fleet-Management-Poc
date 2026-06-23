@@ -50,12 +50,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <Link to="/live-map" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">🗺️</span> <span className="text">Live Shipment Map</span>
                 </Link>
-              </li> {/* 🟢 FIXED */}
+              </li> 
               <li className={`sidebar-item ${isActive('/fleet-status')}`}>
                 <Link to="/fleet-status" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📈</span> <span className="text">Fleet Status</span>
                 </Link>
-              </li> {/* 🟢 FIXED */}
+              </li> 
             </ul>
           </div>
 
@@ -67,22 +67,22 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <Link to="/shipments" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📦</span> <span className="text">All Shipments</span>
                 </Link>
-              </li> {/* 🟢 FIXED */}
+              </li> 
               <li className={`sidebar-item ${isActive('/track')}`}>
                 <Link to="/track" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">📍</span> <span className="text">Track Shipment</span>
                 </Link>
-              </li> {/* 🟢 FIXED */}
-              <li className={`sidebar-item ${isActive('/create-shipment')}`}>
+              </li> 
+              {/* <li className={`sidebar-item ${isActive('/create-shipment')}`}>
                 <Link to="/create-shipment" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">➕</span> <span className="text">Create Shipment</span>
                 </Link>
-              </li> {/* 🟢 FIXED */}
+              </li>  */}
               <li className={`sidebar-item ${isActive('/delayed')}`}>
                 <Link to="/delayed" className="sidebar-link" onClick={handleLinkClick}>
                   <span className="icon">🕒</span> <span className="text">Delayed Shipments</span>
                 </Link>
-              </li> {/* 🟢 FIXED */}
+              </li> 
             </ul>
           </div>
 
