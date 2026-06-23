@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 
 export default function HomeDashboard() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const recentShipments = [
     { id: '#TRK-8902', destination: 'Mumbai Hub', driver: 'Rajesh Kumar', initials: 'RK', status: 'In Transit', eta: '14:30 PM', statusType: 'transit' },
     { id: '#TRK-8903', destination: 'Delhi Terminus', driver: 'Amit Singh', initials: 'AS', status: 'Delayed', eta: '17:45 PM', statusType: 'delayed' },
@@ -25,15 +27,11 @@ export default function HomeDashboard() {
           <p>Real-time summary of your fleet operations</p>
         </div>
         <ActionButtons>
-          {/* <button className="btn-secondary">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
-            Share
-          </button> */}
           <button className="btn-secondary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             Export
           </button>
-          <button className="btn-primary">+ New Shipment</button>
+          <button className="btn-primary" onClick={() => setIsModalOpen(true)}>+ New Shipment</button>
         </ActionButtons>
       </HeaderSection>
 
@@ -154,6 +152,55 @@ export default function HomeDashboard() {
           </LogsList>
         </LogsCard>
       </ContentGrid>
+
+      {/* New Shipment Modal Overlay Setup */}
+      {isModalOpen && (
+        <ModalOverlay onClick={() => setIsModalOpen(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <h5>Create New Shipment</h5>
+              <button className="btn-close" onClick={() => setIsModalOpen(false)}>✕</button>
+            </ModalHeader>
+            <ModalBody>
+              <form onSubmit={(e) => e.preventDefault()}>
+                <FormGroup>
+                  <label htmlFor="destination">Destination</label>
+                  <input type="text" id="destination" placeholder="Enter destination" />
+                </FormGroup>
+                
+                <FormGroup>
+                  <label htmlFor="driver">Assign Driver</label>
+                  <select id="driver" defaultValue="">
+                    <option value="" disabled>Select driver...</option>
+                    <option value="1">Rajesh Kumar</option>
+                    <option value="2">Amit Singh</option>
+                    <option value="3">Vijay Yadav</option>
+                  </select>
+                </FormGroup>
+
+                <FormGroup>
+                  <label htmlFor="vehicle">Vehicle</label>
+                  <select id="vehicle" defaultValue="">
+                    <option value="" disabled>Select vehicle...</option>
+                    <option value="1">VH-201 - Tata Ace</option>
+                    <option value="2">VH-202 - Ashok Leyland</option>
+                    <option value="3">VH-203 - Mahindra Bolero</option>
+                  </select>
+                </FormGroup>
+
+                <FormGroup>
+                  <label htmlFor="eta">Expected Delivery</label>
+                  <input type="date" id="eta" />
+                </FormGroup>
+              </form>
+            </ModalBody>
+            <ModalFooter>
+              <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+              <button type="button" className="btn-primary" onClick={() => setIsModalOpen(false)}>Create Shipment</button>
+            </ModalFooter>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </DashboardWrapper>
   );
 }
@@ -433,6 +480,7 @@ const LogsList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+ animate: fade 1s;
 `;
 
 const LogItem = styled.div`
@@ -468,5 +516,138 @@ const LogContent = styled.div`
     font-size: 11px;
     color: #64748b;
     margin: 0;
+  }
+`;
+
+/* ---------------- Shipment Form Modal Engine ---------------- */
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+`;
+
+const ModalContent = styled.div`
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalFadeIn 0.2s ease-out;
+
+  @keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+`;
+
+const ModalHeader = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    &:hover { color: #475569; }
+  }
+`;
+
+const ModalBody = styled.div`
+  padding: 20px;
+  overflow-y: auto;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 16px;
+  &:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], input[type="date"], select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #1e293b;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      border-color: #2563eb;
+    }
+  }
+
+  /* Explicit fix to align native date selector UI across fields */
+  input[type="date"] {
+    font-family: inherit;
+    min-height: 40px; 
+  }
+
+  placeholder { color: #94a3b8; }
+`;
+
+const ModalFooter = styled.div`
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background-color: #f8fafc;
+
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-secondary {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    &:hover { background-color: #f1f5f9; }
+  }
+
+  .btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    &:hover { background-color: #1d4ed8; }
   }
 `;

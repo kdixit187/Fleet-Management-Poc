@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-export default function LiveMap() {
+export default function FleetStatusDashboard() {
   const [selectedVehicle, setSelectedVehicle] = useState('TRK-4022');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -12,114 +12,142 @@ export default function LiveMap() {
     { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', status: 'Critical', load: 'Perishable Dairy (6 Tons)', speed: '0 km/h (Stopped)', eta: 'Unknown' },
   ];
 
-  // सर्च इनपुट के आधार पर ट्रक्स को फ़िल्टर करना
+  // Filtering logic if needed for extensions
   const filteredVehicles = liveVehicles.filter(truck => 
     truck.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     truck.route.toLowerCase().includes(searchQuery.toLowerCase()) ||
     truck.driver.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const currentVehicleData = liveVehicles.find(v => v.id === selectedVehicle) || liveVehicles[0];
-
   return (
     <PageWrapper>
       {/* Title Section */}
       <HeaderSection>
-        <h1>Live Shipment Fleet Map</h1>
-        <p>Real-time GPS telemetry tracks and route tracking management.</p>
+        <h2>Fleet Status Dashboard</h2>
+        <p>Real-time asset telemetry configurations, operational health metrics, and breakdown logs.</p>
       </HeaderSection>
 
-      <ContentGrid>
-        {/* Left Sidebar: Truck List */}
-        <SidebarCard>
-          <SearchBoxWrapper>
-            <input 
-              type="text" 
-              placeholder="Search active trucks, routes..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </SearchBoxWrapper>
-          
-          <TruckListContainer>
-            {filteredVehicles.map((truck) => (
-              <TruckButton
-                key={truck.id}
-                type="button"
-                isActive={selectedVehicle === truck.id}
-                onClick={() => setSelectedVehicle(truck.id)}
-              >
-                <div>
-                  <div className="truck-id">{truck.id}</div>
-                  <div className="truck-route">{truck.route}</div>
-                  <div className="truck-driver">Driver: {truck.driver}</div>
+      {/* KPI Index Row */}
+      <MetricsGrid>
+        <KpiCard border="#2563eb">
+          <p className="kpi-label">Total Assets Index</p>
+          <h3 className="kpi-value text-dark">124 Trucks</h3>
+        </KpiCard>
+
+        <KpiCard border="#16a34a">
+          <p className="kpi-label">Available (Ready)</p>
+          <h3 className="kpi-value text-success">74 Active</h3>
+        </KpiCard>
+
+        <KpiCard border="#0ea5e9">
+          <p className="kpi-label">In Transit (On Duty)</p>
+          <h3 className="kpi-value text-info">35 Fleet</h3>
+        </KpiCard>
+
+        <KpiCard border="#eab308">
+          <p className="kpi-label">Under Maintenance</p>
+          <h3 className="kpi-value text-warning">15 Workshop</h3>
+        </KpiCard>
+      </MetricsGrid>
+
+      {/* Main Content Split View */}
+      <ContentSplitGrid>
+        {/* Efficiency Utilization Card */}
+        <ContentCard>
+          <h4 className="card-title">Fleet Deployment Efficiency</h4>
+          <EfficiencyWrapper>
+            <CircularProgress>
+              <span className="percentage">88%</span>
+              <span className="subtext">Utilization</span>
+            </CircularProgress>
+
+            <ProgressBarGroup>
+              <ProgressItem>
+                <div className="progress-label">
+                  <span>Available Assets</span>
+                  <span>60%</span>
                 </div>
-                <StatusLabel status={truck.status}>
-                  {truck.status}
-                </StatusLabel>
-              </TruckButton>
-            ))}
-            {filteredVehicles.length === 0 && (
-              <p style={{ padding: '20px', color: '#64748b', fontSize: '13px', textAlign: 'center' }}>No active trucks found</p>
-            )}
-          </TruckListContainer>
-        </SidebarCard>
+                <BarBase>
+                  <BarFill color="#16a34a" width="60%" />
+                </BarBase>
+              </ProgressItem>
 
-        {/* Right Section: Visual Map Engine Simulator */}
-        <MapAndHUDWrapper>
-          <MapCanvasEngine>
-            <div className="grid-overlay"></div>
-            <div className="route-dashed-line"></div>
-            <div className="ping-effect"></div>
-            <div className="live-pointer"></div>
+              <ProgressItem>
+                <div className="progress-label">
+                  <span>Active Deployment</span>
+                  <span>28%</span>
+                </div>
+                <BarBase>
+                  <BarFill color="#0ea5e9" width="28%" />
+                </BarBase>
+              </ProgressItem>
 
-            <p className="engine-status-tag">
-              📍 [MAP RENDERING CANVAS ENGINE Active for {currentVehicleData.id}]
-            </p>
-          </MapCanvasEngine>
+              <ProgressItem>
+                <div className="progress-label">
+                  <span>Workshop Repair</span>
+                  <span>12%</span>
+                </div>
+                <BarBase>
+                  <BarFill color="#eab308" width="12%" />
+                </BarBase>
+              </ProgressItem>
+            </ProgressBarGroup>
+          </EfficiencyWrapper>
+        </ContentCard>
 
-          {/* Telemetry Status HUD */}
-          <TelemetryHUD>
-            <HUDGroup>
-              <p className="hud-label">Active Speed</p>
-              <p className="hud-value">{currentVehicleData.speed}</p>
-            </HUDGroup>
-            <HUDGroup>
-              <p className="hud-label">Est. Arrival Time</p>
-              <p className="hud-value">{currentVehicleData.eta}</p>
-            </HUDGroup>
-            <HUDGroup className="col-span-2">
-              <p className="hud-label">Manifest Load</p>
-              <p className="hud-load-value">{currentVehicleData.load}</p>
-            </HUDGroup>
-          </TelemetryHUD>
-        </MapAndHUDWrapper>
-      </ContentGrid>
+        {/* Critical Alerts Card */}
+        <ContentCard>
+          <h4 className="card-title">Critical Fleet Alerts</h4>
+          <AlertsListGroup>
+            {/* Critical Alert Item */}
+            <AlertItem bg="rgba(239, 68, 68, 0.08)" border="#f87171">
+              <div className="alert-header">
+                <span className="truck-tag">TRK-4022</span>
+                <span className="alert-id">ALT-9082</span>
+              </div>
+              <p className="alert-message">Engine Coolant Temperature Exceeded Critical Threshold (115°C)</p>
+              <div className="alert-footer">
+                <span className="location">📍 NH-48, Near Jaipur Bypass</span>
+                <span className="status-pill badge-danger">Critical</span>
+              </div>
+            </AlertItem>
+
+            {/* Warning Alert Item */}
+            <AlertItem bg="rgba(234, 179, 8, 0.08)" border="#facc15">
+              <div className="alert-header">
+                <span className="truck-tag">TRK-1092</span>
+                <span className="alert-id">ALT-1104</span>
+              </div>
+              <p className="alert-message">Sudden Brake Pad Wear Sensor Telemetry Warning Triggered</p>
+              <div className="alert-footer">
+                <span className="location">📍 Bhilwara Industrial Area</span>
+                <span className="status-pill badge-warning">Warning</span>
+              </div>
+            </AlertItem>
+          </AlertsListGroup>
+        </ContentCard>
+      </ContentSplitGrid>
     </PageWrapper>
   );
 }
 
-/* ---------------- Responsive Styled Components ---------------- */
+/* ---------------- Styled Components Core Layout ---------------- */
 
 const PageWrapper = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
-  padding-top: 94px; /* नेवबार के ओवरलैप को रोकने के लिए फिक्स पैडिंग */
-  font-family: sans-serif;
-
-  @media (max-width: 1024px) {
-    padding: 16px 12px;
-    padding-top: 86px;
-  }
+  padding: 24px;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
 `;
 
 const HeaderSection = styled.div`
   margin-bottom: 24px;
-  h1 {
-    font-size: 26px;
-    font-weight: bold;
-    color: #f02501;
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
     margin: 0 0 6px 0;
   }
   p {
@@ -129,217 +157,192 @@ const HeaderSection = styled.div`
   }
 `;
 
-const ContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 24px;
-
-  @media (max-width: 992px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-`;
-
-const SidebarCard = styled.div`
-  background-color: #0b1329;
-  border-radius: 16px;
-  border: 1px solid #1e293b;
-  overflow: hidden;
-  height: 520px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-`;
-
-const SearchBoxWrapper = styled.div`
-  padding: 16px;
-  background-color: #0f172a;
-  border-bottom: 1px solid #1e293b;
-
-  input {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 13px;
-    background-color: #0b1329;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    color: #ffffff;
-    outline: none;
-    box-sizing: border-box;
-    
-    &:focus {
-      border-color: #2563eb;
-    }
-  }
-`;
-
-const TruckListContainer = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-`;
-
-const TruckButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  text-align: left;
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  background-color: ${props => props.isActive ? 'rgba(37, 99, 235, 0.12)' : 'transparent'};
-  border: none;
-  border-left: 4px solid ${props => props.isActive ? '#2563eb' : 'transparent'};
-  border-bottom: 1px solid #1e293b;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: ${props => props.isActive ? 'rgba(37, 99, 235, 0.12)' : '#111c3a'};
-  }
-
-  .truck-id { font-family: monospace; font-weight: bold; color: #ffffff; font-size: 14px; }
-  .truck-route { font-size: 12px; color: #38bdf8; margin-top: 4px; font-weight: 500; }
-  .truck-driver { font-size: 11px; color: #94a3b8; margin-top: 4px; }
-`;
-
-const StatusLabel = styled.span`
-  font-size: 11px;
-  font-weight: bold;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  background-color: ${props => 
-    props.status === 'On Time' ? 'rgba(16, 185, 129, 0.15)' : 
-    props.status === 'Delayed' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)'};
-  color: ${props => 
-    props.status === 'On Time' ? '#34d399' : 
-    props.status === 'Delayed' ? '#fbbf24' : '#f87171'};
-`;
-
-const MapAndHUDWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
-
-const MapCanvasEngine = styled.div`
-  background-color: #0f172a;
-  border-radius: 16px;
-  border: 1px solid #1e293b;
-  height: 340px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-
-  .grid-overlay {
-    position: absolute;
-    inset: 0;
-    opacity: 0.06;
-    background-image: linear-gradient(to right, #808080 1px, transparent 1px), linear-gradient(to bottom, #808080 1px, transparent 1px);
-    background-size: 24px_24px;
-  }
-
-  .route-dashed-line {
-    position: absolute;
-    top: 50%;
-    left: 25%;
-    width: 40%;
-    height: 2px;
-    border-top: 2px dashed rgba(56, 189, 248, 0.4);
-  }
-
-  .ping-effect {
-    position: absolute;
-    top: 50%;
-    left: 65%;
-    transform: translate(-50%, -50%);
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background-color: #38bdf8;
-    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-
-    @keyframes ping {
-      75%, 100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
-    }
-  }
-
-  .live-pointer {
-    position: absolute;
-    top: 50%;
-    left: 65%;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #38bdf8;
-    border: 2px solid #ffffff;
-    box-shadow: 0 0 10px #38bdf8;
-  }
-
-  .engine-status-tag {
-    z-index: 10;
-    font-size: 12px;
-    font-family: monospace;
-    tracking-width: 0.05em;
-    color: #cbd5e1;
-    background-color: rgba(11, 19, 41, 0.9);
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid #334155;
-  }
-`;
-
-const TelemetryHUD = styled.div`
-  background-color: #0b1329;
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px solid #1e293b;
+const MetricsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  gap: 24px;
+  margin-bottom: 24px;
 
-  .col-span-2 { grid-column: span 2; }
+  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 576px) { grid-template-columns: 1fr; }
+`;
 
-  @media (max-width: 576px) {
-    grid-template-columns: 1fr;
-    .col-span-2 { grid-column: span 1; }
+const KpiCard = styled.div`
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+  border-left: 4px solid ${props => props.border};
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 6px 0;
+  }
+  .kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .text-dark { color: #1e293b; }
+  .text-success { color: #16a34a; }
+  .text-info { color: #0ea5e9; }
+  .text-warning { color: #d97706; }
+`;
+
+const ContentSplitGrid = styled.div`
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 24px;
+
+  @media (max-width: 992px) { grid-template-columns: 1fr; }
+`;
+
+const ContentCard = styled.div`
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 20px 0;
   }
 `;
 
-const HUDGroup = styled.div`
+/* ---------------- Efficiency Visual Section ---------------- */
+
+const EfficiencyWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+`;
+
+const CircularProgress = styled.div`
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 3px solid #2563eb;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 
-  .hud-label {
+  .percentage {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2563eb;
+    line-height: 1;
+  }
+  .subtext {
     font-size: 11px;
     color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
+    margin-top: 2px;
   }
+`;
 
-  .hud-value {
-    font-size: 18px;
-    font-weight: bold;
+const ProgressBarGroup = styled.div`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const ProgressItem = styled.div`
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 6px;
+    span:last-child { color: #1e293b; font-weight: 600; }
+  }
+`;
+
+const BarBase = styled.div`
+  width: 100%;
+  height: 8px;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+`;
+
+const BarFill = styled.div`
+  height: 100%;
+  background-color: ${props => props.color};
+  width: ${props => props.width};
+  border-radius: 9999px;
+`;
+
+/* ---------------- Alerts Section ---------------- */
+
+const AlertsListGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const AlertItem = styled.div`
+  border: 1px solid ${props => props.border};
+  background-color: ${props => props.bg};
+  border-radius: 6px;
+  padding: 16px;
+
+  .alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .truck-tag {
+    background: #1e293b;
     color: #ffffff;
-    margin: 0;
-  }
-
-  .hud-load-value {
-    font-size: 14px;
+    font-family: monospace;
+    font-size: 12px;
     font-weight: 600;
-    color: #38bdf8;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 3px 8px;
+    border-radius: 4px;
   }
+  .alert-id {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .alert-message {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+  }
+  .alert-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 10px;
+  }
+  .location {
+    font-size: 12px;
+    color: #475569;
+    font-weight: 500;
+  }
+  .status-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+  }
+  .badge-danger { background-color: #dc2626; color: #ffffff; }
+  .badge-warning { background-color: #eab308; color: #1e293b; }
 `;
