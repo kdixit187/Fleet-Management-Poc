@@ -10,6 +10,8 @@ export default function DriverFleetDirectory() {
     fullName: '',
     email: '',
     phone: '',
+    password: '',
+    conformpassword: '',
     emergencyContact: '',
     addressProof: '',
     aadharCard: '',
@@ -20,8 +22,6 @@ export default function DriverFleetDirectory() {
     bankBranch: '',
     medicalReport: '',
     policeVerification: '',
-    password: '',
-    confirmPassword: '', 
     licenseNumber: '',
     experience: '',
     
@@ -33,7 +33,7 @@ export default function DriverFleetDirectory() {
     aadharFile: null
   });
 
-  // image_1993fc.png के अनुसार परफेक्ट लाइव डेटा मैट्रिक्स
+  // परफेक्ट लाइव डेटा मैट्रिक्स
   const driversData = [
     { sr: "#001", initials: "KL", avatarBg: "#0ea5e9", name: "Kartikey Lodha", phone: "+91 98765 43210", dob: "18-05-2002", address: "Bhilwara, Rajasthan", status: "On Duty" }
   ];
@@ -56,6 +56,14 @@ export default function DriverFleetDirectory() {
     setTimeout(() => {
       setFormSubmitted(false);
       setIsModalOpen(false);
+      // सबमिट होने के बाद फॉर्म खाली करने के लिए:
+      setFormData({
+        fullName: '', email: '', phone: '', password: '', conformpassword: '',
+        emergencyContact: '', addressProof: '', aadharCard: '', panCard: '',
+        bankName: '', accountNumber: '', ifscCode: '', bankBranch: '',
+        medicalReport: '', policeVerification: '', licenseNumber: '', experience: '',
+        licenseFile: null, policeFile: null, bankFile: null, medicalFile: null, aadharFile: null
+      });
     }, 2000);
   };
 
@@ -186,17 +194,18 @@ export default function DriverFleetDirectory() {
       {/* 4. Complete Driver Onboarding Popup Modal Layout */}
       {isModalOpen && (
         <ModalOverlay onClick={() => setIsModalOpen(false)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <div>
-                <h5><i className="bi bi-person-badge text-primary me-2"></i>Onboard New Operational Driver</h5>
-                <p className="modal-subtitle">Fill out personal info, credentials, and scan-copy document infrastructure mappings.</p>
-              </div>
-              <button type="button" className="close-x-btn" onClick={() => setIsModalOpen(false)}>✕</button>
-            </ModalHeader>
+          {/* <form> टैग को यहाँ पूरे कंटेंट स्ट्रक्चर के ऊपर रखा गया है */}
+          <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '720px' }}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <div>
+                  <h5><i className="bi bi-person-badge text-primary me-2"></i>Onboard New Operational Driver</h5>
+                  <p className="modal-subtitle">Fill out personal info, credentials, and scan-copy document infrastructure mappings.</p>
+                </div>
+                <button type="button" className="close-x-btn" onClick={() => setIsModalOpen(false)}>✕</button>
+              </ModalHeader>
 
-            <ModalBody>
-              <form onSubmit={handleSubmit}>
+              <ModalBody>
                 <FormSectionTitle><i className="bi bi-person-lines-fill me-2"></i>Personal Details</FormSectionTitle>
                 <FormRow>
                   <FormGroup>
@@ -213,6 +222,14 @@ export default function DriverFleetDirectory() {
                   <FormGroup>
                     <label htmlFor="email">Email Address</label>
                     <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} placeholder="e.g. driver@gmail.com" required />
+                  </FormGroup>
+                  <FormGroup>
+                    <label htmlFor="password">Password</label>
+                    <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} placeholder="......" required />
+                  </FormGroup>
+                   <FormGroup>
+                    <label htmlFor="conformpassword">Confirm Password</label>
+                    <input type="password" id="conformpassword" name="conformpassword" value={formData.conformpassword} onChange={handleChange} placeholder="..........." required />
                   </FormGroup>
                   <FormGroup>
                     <label htmlFor="experience">Years of Experience</label>
@@ -266,7 +283,6 @@ export default function DriverFleetDirectory() {
                   </FormGroup>
                 </FormRow>
 
-                {/* 5 Documents Upload Setup matching required rows */}
                 <FormSectionTitle><i className="bi bi-cloud-upload me-2"></i>Required Document Uploads</FormSectionTitle>
                 <UploadGridContainer>
                   <UploadGroupCard>
@@ -324,14 +340,15 @@ export default function DriverFleetDirectory() {
                     </div>
                   </UploadGroupCard>
                 </UploadGridContainer>
-              </form>
-            </ModalBody>
+              </ModalBody>
 
-            <ModalFooter>
-              <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-              <button type="button" className="btn-submit" onClick={handleSubmit}>{formSubmitted ? 'Saving...' : 'Add Driver'}</button>
-            </ModalFooter>
-          </ModalContent>
+              <ModalFooter>
+                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                {/* बटन का type "submit" किया गया है ताकि यह फॉर्म ट्रिगर कर सके */}
+                <button type="submit" className="btn-submit">{formSubmitted ? 'Saving...' : 'Add Driver'}</button>
+              </ModalFooter>
+            </ModalContent>
+          </form>
         </ModalOverlay>
       )}
     </PageWrapper>
@@ -339,7 +356,6 @@ export default function DriverFleetDirectory() {
 }
 
 /* ---------------- Responsive Styled Framework Core Layout ---------------- */
-
 const PageWrapper = styled.div`
     max-width: 1400px;
     margin: 0 auto;
@@ -456,13 +472,13 @@ const ActionButtonsWrapper = styled.div`
 `;
 
 /* ---------------- SCROLLABLE POPUP MODAL ---------------- */
-
 const ModalOverlay = styled.div`
     position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.3); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 16px;
 `;
 
 const ModalContent = styled.div`
-    background-color: #ffffff; border-radius: 12px; width: 100%; max-width: 720px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); display: flex; flex-direction: column; overflow: hidden; animation: modalSlideIn 0.2s ease-out;
+    background-color: #ffffff; border-radius: 12px; width: 100%; display: flex; flex-direction: column; overflow: hidden; animation: modalSlideIn 0.2s ease-out;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
     @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
 `;
 
