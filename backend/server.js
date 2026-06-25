@@ -1,11 +1,11 @@
-require('dotenv').config(); // Load environment variables from .env file
-const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const mysql = require('mysql2/promise'); // Use promise version for async/await
-const crypto = require('crypto');
-const { ethers } = require('ethers');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+import 'dotenv/config'; 
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import mysql from 'mysql2/promise';
+import crypto from 'crypto';
+import { ethers } from 'ethers';
+import { S3Client } from '@aws-sdk/client-s3';
 
 const app = express();
 
@@ -42,14 +42,14 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-// डेटाबेस कनेक्शन वेरिफिकेशन
+// Database Connection Verification
 db.getConnection()
     .then((conn) => {
-        console.log('✅ MySQL Database (logistics_db) से सफलतापूर्वक कनेक्ट हो गए!');
+        console.log('✅ Connected successfully to MySQL Database (logistics_db)!');
         conn.release();
     })
     .catch((err) => {
-        console.error('❌ MySQL डेटाबेस कनेक्शन फेल हो गया:', err.message);
+        console.error('❌ MySQL database connection failed:', err.message);
     });
 
 // ==========================================
@@ -79,7 +79,7 @@ try {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// 🔴 यहाँ सभी संभावित फाइल फील्ड्स को रिसीव करने के लिए एरे कंफिगर किया गया है
+// 🔴 Configured array here to receive all potential file fields
 const cpUpload = upload.fields([
     { name: 'licenseFile', maxCount: 1 },
     { name: 'policeFile', maxCount: 1 },
@@ -88,7 +88,7 @@ const cpUpload = upload.fields([
     { name: 'aadharFile', maxCount: 1 }
 ]);
 
-// 🔴 LIVE GET ROUTE: डेटाबेस के सभी मिसिंग कॉलम्स (आधार, पैन, बैंक इन्फ्रास्ट्रक्चर) को यहाँ शामिल किया गया है
+// 🔴 LIVE GET ROUTE: All missing columns from the database (Aadhaar, PAN, Bank Infrastructure) are included here.
 app.get('/api/drivers', async (req, res) => {
     try {
         const [rows] = await db.query(
@@ -102,7 +102,7 @@ app.get('/api/drivers', async (req, res) => {
         return res.status(200).json({ success: true, data: rows });
     } catch (error) {
         console.error('❌ Fetch Error from MySQL:', error.message);
-        return res.status(500).json({ success: false, message: `डेटाबेस एरर: ${error.message}` });
+        return res.status(500).json({ success: false, message: `Database Error: ${error.message}` });
     }
 });
 
@@ -115,7 +115,7 @@ app.get('/', (req, res) => {
 // ==========================================
 app.post('/api/drivers', cpUpload, async (req, res) => {
     try {
-        console.log(">>>>>>>> फ्रंटएंड से रिक्वेस्ट आई है! >>>>>>>>");
+        console.log(">>>>>>>> Request received from frontend! >>>>>>>>");
         
         const { 
             fullName, email, phone, password, experience, licenseNumber,
@@ -123,7 +123,7 @@ app.post('/api/drivers', cpUpload, async (req, res) => {
             panCard, medicalReport, policeVerification, dob 
         } = req.body;
         
-        // फाइल वेक्टर्स पार्सिंग यूटिलिटी
+        // File vectors parsing utility
         const getFilePath = (fieldName) => {
             if (req.files && req.files[fieldName] && req.files[fieldName][0]) {
                 const fileObj = req.files[fieldName][0];
@@ -146,7 +146,7 @@ app.post('/api/drivers', cpUpload, async (req, res) => {
         const fileHash = '0x' + crypto.createHash('sha256').update(file.buffer).digest('hex');
         console.log(`[Security] License File Hash Generated: ${fileHash}`);
 
-        // 🔴 आपकी SQL संरचना के साथ सभी 20 वेरिएबल्स की सटीक मैपिंग
+        // 🔴 Exact mapping of all 20 variables with your SQL structure
         const sqlQuery = `
             INSERT INTO drivers 
             (full_name, email, phone, password, dob, experience, license_number, bank_name, account_number, ifsc_code, bank_branch, aadhar_card, pan_card, medical_report, police_verification, license_file_path, police_file_path, bank_file_path, medical_file_path, aadhar_file_path) 

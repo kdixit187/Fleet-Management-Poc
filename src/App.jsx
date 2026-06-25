@@ -13,6 +13,7 @@ import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassig
 import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
 import MaintenanceLogs from "../web/src/pages/admin/fleet managemeent/maintenancelogs.jsx";
 import DriverViewModal from "../web/src/pages/admin/fleet managemeent/driverviewmodal.jsx"; 
+import DriverEditView  from "../web/src/pages/admin/fleet managemeent/drivereditview.jsx"; // Import the Edit component
 // 📦 SHIPMENT MODULE IMPORTS
 import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx';
 import DelayedShipments from '../web/src/pages/admin/shipment/delayedshipments.jsx';
