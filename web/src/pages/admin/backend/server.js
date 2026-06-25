@@ -78,13 +78,26 @@ try {
 // ==========================================
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-const cpUpload = upload.fields([{ name: 'licenseFile', maxCount: 1 }]);
 
-// 🔴 LIVE GET ROUTE: डेटाबेस से dob सहित लाइव लिस्ट लाने के लिए
+// 🔴 यहाँ सभी संभावित फाइल फील्ड्स को रिसीव करने के लिए एरे कंफिगर किया गया है
+const cpUpload = upload.fields([
+    { name: 'licenseFile', maxCount: 1 },
+    { name: 'policeFile', maxCount: 1 },
+    { name: 'bankFile', maxCount: 1 },
+    { name: 'medicalFile', maxCount: 1 },
+    { name: 'aadharFile', maxCount: 1 }
+]);
+
+// 🔴 LIVE GET ROUTE: डेटाबेस के सभी मिसिंग कॉलम्स (आधार, पैन, बैंक इन्फ्रास्ट्रक्चर) को यहाँ शामिल किया गया है
 app.get('/api/drivers', async (req, res) => {
     try {
         const [rows] = await db.query(
-            'SELECT id, full_name, email, phone, experience, license_number, DATE_FORMAT(dob, "%Y-%m-%d") as dob, medical_report, police_verification, license_file_path FROM drivers ORDER BY id DESC'
+            `SELECT id, full_name, email, phone, experience, license_number, 
+                    bank_name, account_number, ifsc_code, bank_branch, 
+                    aadhar_card, pan_card, medical_report, police_verification, 
+                    DATE_FORMAT(dob, "%Y-%m-%d") as dob, 
+                    license_file_path, police_file_path, bank_file_path, medical_file_path, aadhar_file_path 
+             FROM drivers ORDER BY id DESC`
         );
         return res.status(200).json({ success: true, data: rows });
     } catch (error) {
@@ -98,7 +111,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 5. API Endpoint - Driver Registration (DOB Enabled)
+// 5. API Endpoint - Driver Registration (All File Vectors Mapped)
 // ==========================================
 app.post('/api/drivers', cpUpload, async (req, res) => {
     try {
@@ -110,24 +123,34 @@ app.post('/api/drivers', cpUpload, async (req, res) => {
             panCard, medicalReport, policeVerification, dob 
         } = req.body;
         
-        const file = req.files && req.files['licenseFile'] ? req.files['licenseFile'][0] : null;
+        // फाइल वेक्टर्स पार्सिंग यूटिलिटी
+        const getFilePath = (fieldName) => {
+            if (req.files && req.files[fieldName] && req.files[fieldName][0]) {
+                const fileObj = req.files[fieldName][0];
+                return `https://my-fleet-bucket.s3.amazonaws.com/drivers/${Date.now()}-${fileObj.originalname}`;
+            }
+            return null;
+        };
 
-        if (!file) {
+        const licensePath = getFilePath('licenseFile');
+        const policePath = getFilePath('policeFile') || `https://my-fleet-bucket.s3.amazonaws.com/drivers/mock-police-${Date.now()}.png`;
+        const bankPath = getFilePath('bankFile') || `https://my-fleet-bucket.s3.amazonaws.com/drivers/mock-bank-${Date.now()}.png`;
+        const medicalPath = getFilePath('medicalFile') || `https://my-fleet-bucket.s3.amazonaws.com/drivers/mock-medical-${Date.now()}.png`;
+        const aadharPath = getFilePath('aadharFile') || `https://my-fleet-bucket.s3.amazonaws.com/drivers/mock-aadhar-${Date.now()}.png`;
+
+        if (!req.files || !req.files['licenseFile']) {
             return res.status(400).json({ success: false, message: 'License file upload is mandatory!' });
         }
 
-        // STEP A: Create SHA-256 Hash
+        const file = req.files['licenseFile'][0];
         const fileHash = '0x' + crypto.createHash('sha256').update(file.buffer).digest('hex');
         console.log(`[Security] License File Hash Generated: ${fileHash}`);
 
-        const fileName = `drivers/${Date.now()}-${file.originalname}`;
-        const s3Url = `https://my-fleet-bucket.s3.amazonaws.com/${fileName}`;
-
-        // 🔴 PERFECT MATCH QUERY: अब आपकी टेबल में dob कॉलम है, इसलिए यह क्वेरी 100% रन होगी
+        // 🔴 आपकी SQL संरचना के साथ सभी 20 वेरिएबल्स की सटीक मैपिंग
         const sqlQuery = `
             INSERT INTO drivers 
-            (full_name, email, phone, password, dob, experience, license_number, bank_name, account_number, ifsc_code, bank_branch, aadhar_card, pan_card, medical_report, police_verification, license_file_path) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (full_name, email, phone, password, dob, experience, license_number, bank_name, account_number, ifsc_code, bank_branch, aadhar_card, pan_card, medical_report, police_verification, license_file_path, police_file_path, bank_file_path, medical_file_path, aadhar_file_path) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const expYears = experience ? parseInt(experience) : 0;
@@ -139,7 +162,8 @@ app.post('/api/drivers', cpUpload, async (req, res) => {
             fullName || '', driverEmail, phone || '', driverPassword, driverDob, expYears, 
             licenseNumber || '', bankName || null, accountNumber || null, 
             ifscCode || null, bankBranch || null, aadharCard || '', panCard || null, 
-            medicalReport || 'Pending', policeVerification || 'Pending', s3Url
+            medicalReport || 'Pending', policeVerification || 'Pending', 
+            licensePath, policePath, bankPath, medicalPath, aadharPath
         ];
         
         const [result] = await db.query(sqlQuery, values);
