@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+// 🔴 मान लेते हैं कि DriverViewModal इसी डायरेक्टरी में रखा है
+import DriverViewModal from './DriverViewModal'; 
 
 export default function DriverFleetDirectory() {
   // State Matrix Controls
@@ -8,6 +10,9 @@ export default function DriverFleetDirectory() {
   
   // लाइव फ्रंटएंड डेटा एरे स्टोर करने के लिए स्टेट
   const [driversData, setDriversData] = useState([]);
+  
+  // 🔴 व्यू मॉडल को कंट्रोल करने के लिए स्टेट जोड़ी गई
+  const [selectedDriverForView, setSelectedDriverForView] = useState(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -118,7 +123,7 @@ export default function DriverFleetDirectory() {
 
       if (response.ok && result.success) {
         setIsModalOpen(false); 
-        fetchDrivers(); // लाइव डेटा सिंक रीफ्रेश ट्रिगर
+        fetchDrivers(); // रीफ्रेश डेटा
         
         setFormData({
           fullName: '', email: '', phone: '', password: '', confirmPassword: '',
@@ -227,7 +232,6 @@ export default function DriverFleetDirectory() {
               ) : (
                 driversData.map((driver, index) => (
                   <tr key={driver.id || index}>
-                    {/* 🔴 FIXED: यहाँ index + 1 का उपयोग किया गया है ताकि क्रम हमेशा #1 से शुरू हो */}
                     <td className="font-mono text-muted">#{index + 1}</td>
                     <td>
                       <DriverProfileBox>
@@ -243,9 +247,15 @@ export default function DriverFleetDirectory() {
                     </td>
                     <td>
                       <ActionButtonsWrapper style={{justifyContent: 'center'}}>
-                        <a href={driver.license_file_path} target="_blank" rel="noreferrer" className="icon-btn-view" title="View Document File">
+                        {/* 🔴 FIXED: <a> टैग को <button> में बदला और onClick पर सिलेक्टेड ड्राइवर सेट किया */}
+                        <button 
+                          type="button" 
+                          className="icon-btn-view" 
+                          title="View Driver Profile" 
+                          onClick={() => setSelectedDriverForView(driver)}
+                        >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </a>
+                        </button>
                         <button type="button" className="icon-btn-edit" title="Edit Driver Details" onClick={() => alert(`ID #${driver.id} एडिट मोड ट्रिगर`)}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                         </button>
@@ -443,6 +453,14 @@ export default function DriverFleetDirectory() {
             </ModalContent>
           </form>
         </ModalOverlay>
+      )}
+
+      {/* 🔴 FIXED: यहाँ से DriverViewModal कॉम्पोनेंट को कॉल किया जा रहा है */}
+      {selectedDriverForView && (
+        <DriverViewModal 
+          driver={selectedDriverForView} 
+          onClose={() => setSelectedDriverForView(null)} 
+        />
       )}
     </PageWrapper>
   );

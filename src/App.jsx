@@ -12,6 +12,7 @@ import DriverShow from "../web/src/pages/admin/fleet managemeent/driverlist.jsx"
 import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx"; // Check if your file is 'driverassigment' (missing the second 'n')
 import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
 import MaintenanceLogs from "../web/src/pages/admin/fleet managemeent/maintenancelogs.jsx";
+import DriverViewModal from "../web/src/pages/admin/fleet managemeent/driverviewmodal.jsx"; 
 // 📦 SHIPMENT MODULE IMPORTS
 import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx';
 import DelayedShipments from '../web/src/pages/admin/shipment/delayedshipments.jsx';
