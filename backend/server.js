@@ -1,6 +1,6 @@
 import 'dotenv/config'; 
 import express from 'express';
-import cors from 'cors';
+import cors from 'cors'; // Sirf ek hi baar import karein
 import multer from 'multer';
 import mysql from 'mysql2/promise';
 import crypto from 'crypto';
@@ -9,6 +9,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 
 const app = express();
 
+// Sirf ek hi CORS configuration ka use karein
 app.use(cors({
     origin: 'http://localhost:5173', 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -105,7 +106,34 @@ app.get('/api/drivers', async (req, res) => {
         return res.status(500).json({ success: false, message: `Database Error: ${error.message}` });
     }
 });
+// Server side: routes/vehicle.js
+app.post('/api/vehicles', async (req, res) => {
+    try {
+        const { vehicleId, vehicleType, companyName, modelYear, licensePlate, pucNumber, notes } = req.body;
+        
+        // Database table ke exact column names ke saath match karein
+        const sql = `INSERT INTO vehicles 
+            (vehicle_id, type, company_name, year, license_plate, puc_certificate_number, notes) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            
+        await db.query(sql, [vehicleId, vehicleType, companyName, modelYear, licensePlate, pucNumber, notes]);
+        
+        res.status(201).json({ success: true, message: "Vehicle added successfully" });
+    } catch (err) {
+        console.error("SQL Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
+// GET: Fetch Vehicles Route
+app.get('/api/vehicles', async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM vehicles ORDER BY id DESC");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Database fetch failed" });
+    }
+});
 app.get('/', (req, res) => {
     res.send('<h1>FleetChain Hybrid Web3 Backend is running perfectly!</h1>');
 });
