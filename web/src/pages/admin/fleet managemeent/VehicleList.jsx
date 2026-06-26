@@ -1,3 +1,4 @@
+import { Upload } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
@@ -14,12 +15,39 @@ const [vehicleFormData, setVehicleFormData] = useState({
     pucExpiry: '',
     notes: ''
 });
+const handleView = (row) => {
+    alert("Viewing: " + row.vehicle_id);
+};
+
+const handleEdit = (row) => {
+    // Edit modal ke liye logic yahan aayega
+    console.log("Editing:", row);
+};
+
+const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/vehicles/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            fetchVehicles(); // Refresh list
+        }
+    } catch (err) {
+        console.error("Delete Error:", err);
+    }
+};
+
+const handleFileChange = (e, fieldName) => {
+    setVehicleFormData(prev => ({ ...prev, [fieldName]: e.target.files[0] }));
+};
 const fetchVehicles = async () => {
     try {
         const response = await fetch('http://localhost:5000/api/vehicles');
         const data = await response.json();
-        // Backend se aaye hue data ko set karein
-        setVehiclesData(data.data || data); 
+        // Null check add karein
+        if (data) {
+            setVehiclesData(Array.isArray(data) ? data : (data.data || []));
+        }
     } catch (err) {
         console.error("Error fetching vehicles:", err);
     }
@@ -164,7 +192,23 @@ const handleAddVehicle = async () => {
                                         <input type="text" id="pucNumber" placeholder="E.G., RJ06-PUC-12345" value={vehicleFormData.pucNumber} onChange={handleVehicleChange} />
                                     </FormGroup>
                                 </FormRow>
-
+<UploadGridContainer>
+    <UploadGroupCard>
+        <label>PUC Certificate</label>
+        <div className="inner-uploader-box">
+            {/* ID change karke 'pucFile' kiya */}
+            <input 
+                type="file" 
+                id="pucFile" 
+                onChange={(e) => handleFileChange(e, 'pucFile')} 
+            />
+            <label htmlFor="pucFile" className="upload-trigger">
+                {/* state check 'pucFile' ke liye */}
+                {vehicleFormData.pucFile ? vehicleFormData.pucFile.name : 'Choose PUC File / Drop here'}
+            </label>
+        </div>
+    </UploadGroupCard>
+</UploadGridContainer>
                                 <FormGroup>
                                     <label>📝 Notes</label>
                                     <textarea rows="3" id="notes" placeholder="Additional notes..." value={vehicleFormData.notes} onChange={handleVehicleChange}></textarea>
@@ -320,4 +364,42 @@ const ActionButtons = styled.div`
     .edit:hover { background: #bae6fd; }
     .view:hover { background: #dbeafe; }
     .delete:hover { background: #fecaca; }
+`;
+const UploadGridContainer = styled.div` margin: 16px 0; `;
+const UploadGroupCard = styled.div`
+    border: 2px dashed #e2e8f0; // Border thoda light aur dashed
+    padding: 20px; 
+    border-radius: 10px; 
+    background: #ffffff; // White background
+    margin: 16px 0;
+    
+    label { 
+        font-size: 13px; 
+        font-weight: 600; 
+        color: #475569; 
+        margin-bottom: 12px; 
+        display: block; 
+    }
+    
+    .inner-uploader-box { position: relative; }
+    
+    input[type="file"] { display: none; }
+    
+    .upload-trigger { 
+        display: block; 
+        padding: 14px; 
+        background: #f8fafc; // Light gray trigger background
+        border: 1px solid #cbd5e1; 
+        border-radius: 8px; 
+        cursor: pointer; 
+        text-align: center; 
+        color: #3b82f6; // Blue text for visibility
+        font-weight: 500;
+        transition: all 0.2s;
+        
+        &:hover {
+            background: #eff6ff; // Hover pe halka blue
+            border-color: #3b82f6;
+        }
+    }
 `;
