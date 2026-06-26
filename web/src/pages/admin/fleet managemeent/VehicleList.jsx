@@ -75,29 +75,32 @@ const handleAddVehicle = async () => {
                 <TableResponsiveWrapper>
                     <RegistryGridTable>
                         <thead>
-                            <tr>
-                                <th>Sr. No</th>
-                                <th>Company Owner</th>
-                                <th>Truck Model</th>
-                                <th>Model Year</th>
-                                <th>Number Plate</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-               <tbody>
+    <tr>
+        <th>Sr. No</th>
+        <th>Company Owner</th>
+        <th>Truck Model</th>
+        <th>Model Year</th>
+        <th>Number Plate</th>
+        <th>Status</th>
+        <th>Actions</th> {/* Naya column */}
+    </tr>
+</thead>
+<tbody>
     {vehiclesData.map((row, index) => (
         <tr key={row.id}>
-            <td>{index + 1}</td> {/* Sr. No auto-increment */}
-            <td>
-                <OwnerCell>
-                    {/* Yahan row.owner nahi hai, toh company name dikhayein */}
-                    <span>{row.company_name}</span>
-                </OwnerCell>
-            </td>
-            <td className="font-bold">{row.type}</td>
+            <td>{index + 1}</td>
+            <td>{row.company_name}</td>
+            <td>{row.type}</td>
             <td>{row.year}</td>
             <td><PlateTag>{row.license_plate}</PlateTag></td>
-            <td><StatusBadge>Active</StatusBadge></td> 
+            <td><StatusBadge>Active</StatusBadge></td>
+            <td>
+                <ActionButtons>
+                     <button className="view" onClick={() => handleView(row)}>View</button>
+                    <button className="edit" onClick={() => handleEdit(row)}>Edit</button>
+                    <button className="delete" onClick={() => handleDelete(row.id)}>Delete</button>
+                </ActionButtons>
+            </td>
         </tr>
     ))}
 </tbody>
@@ -301,3 +304,20 @@ const FormGroup = styled.div`
         
 `;
 const ModalFooter = styled.div` padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; background: #fafafa; .btn-submit { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; } .btn-cancel { background: #f1f5f9; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; } `;
+const ActionButtons = styled.div`
+    display: flex;
+    gap: 8px;
+    button {
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+    } .edit { background: #e0f2fe; color: #0284c7; }
+    .view { background: #f3fff0; color: #0ee971; }
+    .delete { background: #fee2e2; color: #dc2626; }
+    .edit:hover { background: #bae6fd; }
+    .view:hover { background: #dbeafe; }
+    .delete:hover { background: #fecaca; }
+`;

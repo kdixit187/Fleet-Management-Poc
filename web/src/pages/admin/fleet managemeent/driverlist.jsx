@@ -1,7 +1,7 @@
       import React, { useState, useEffect } from 'react';
       import styled from 'styled-components';
       // 🔴 सुनिश्चित करें कि DriverViewModal.jsx इसी फ़ोल्डर में है
-      import DriverViewModal from './DriverViewModal'; 
+      import DriverViewModal from './driverviewmodal'; 
           import DriverEditView from './DriverEditView'; // Import the Edit component
 
       export default function DriverFleetDirectory() {
