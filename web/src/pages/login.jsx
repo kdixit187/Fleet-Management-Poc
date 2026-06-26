@@ -46,7 +46,7 @@ const Form = () => {
               type="text" 
               name="email"
               className="input" 
-              placeholder="Enter admin name" 
+              placeholder="Enter user name" 
               value={credentials.email}
               onChange={handleChange}
               required

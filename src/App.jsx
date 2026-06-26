@@ -10,10 +10,13 @@ import FleetStatus from "../web/src/pages/admin/dashboard/fleetstatus.jsx";
 
 import DriverShow from "../web/src/pages/admin/fleet managemeent/driverlist.jsx";
 import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx"; // Check if your file is 'driverassigment' (missing the second 'n')
-import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
+
 import MaintenanceLogs from "../web/src/pages/admin/fleet managemeent/maintenancelogs.jsx";
 import DriverViewModal from "../web/src/pages/admin/fleet managemeent/driverviewmodal.jsx"; 
 import DriverEditView  from "../web/src/pages/admin/fleet managemeent/drivereditview.jsx"; // Import the Edit component
+import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
+import VehicleView from "../web/src/pages/admin/fleet managemeent/vehicleview.jsx";
+import VehicleEdit from "../web/src/pages/admin/fleet managemeent/vehicleedit.jsx";
 // 📦 SHIPMENT MODULE IMPORTS
 import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx';
 import DelayedShipments from '../web/src/pages/admin/shipment/delayedshipments.jsx';
@@ -62,7 +65,9 @@ function App() {
         <Route path="/fleet" element={<DashboardLayout><VehicleList /></DashboardLayout>} />
         <Route path="/maintenance" element={<DashboardLayout><MaintenanceLogs /></DashboardLayout>} />
         <Route path="/fleet-status" element={<DashboardLayout><FleetStatus /></DashboardLayout>} /> 
-        
+        <Route path="/vehicles" element={<DashboardLayout><VehicleList /></DashboardLayout>} />
+        <Route path="/vehicle-view/:id?" element={<DashboardLayout><VehicleView /></DashboardLayout>} /> 
+        <Route path="/vehicle-edit/:id?" element={<DashboardLayout><VehicleEdit /></DashboardLayout>} />
         {/* 📦 SHIPMENTS MANAGEMENT MODULE */}
         <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
         <Route path="/delayed" element={<DashboardLayout><DelayedShipments /></DashboardLayout>} />
