@@ -88,6 +88,384 @@
         { name: 'medicalFile', maxCount: 1 },
         { name: 'aadharFile', maxCount: 1 }
     ]);
+    // server.js mein tracking ID generate karne ka function
+const generateTrackingId = (id) => {
+    const prefix = 'TRK';
+    const year = new Date().getFullYear();
+    const paddedId = String(id).padStart(4, '0');
+    return `${prefix}-${year}-${paddedId}`;
+};
+
+// ==================== SHIPMENT ROUTES ====================
+
+// GET all shipments
+app.get('/api/shipments', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT s.*, 
+                   d.full_name as driver_name,
+                   v.vehicle_id as vehicle_code
+            FROM shipments s
+            LEFT JOIN drivers d ON s.driver_id = d.id
+            LEFT JOIN vehicles v ON s.vehicle_id = v.id
+            ORDER BY s.id ASC
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching shipments:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+// POST route mein use karein
+app.post('/api/shipments', async (req, res) => {
+    try {
+        const { destination, client, weight, driver_id, vehicle_id, eta, status, notes } = req.body;
+        
+        const [result] = await db.query(
+            `INSERT INTO shipments 
+             (destination, client, weight, driver_id, vehicle_id, eta, status, notes) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [destination, client, weight, driver_id, vehicle_id, eta, status, notes]
+        );
+        
+        // Generate tracking ID
+        const trackingId = generateTrackingId(result.insertId);
+        
+        // Update with tracking ID
+        await db.query(
+            `UPDATE shipments SET tracking_id = ? WHERE id = ?`,
+            [trackingId, result.insertId]
+        );
+        
+        res.status(201).json({ 
+            id: result.insertId,
+            tracking_id: trackingId,
+            message: 'Shipment created successfully' 
+        });
+    } catch (error) {
+        console.error('Error creating shipment:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// PUT - Update shipment with client and weight
+app.put('/api/shipments/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { destination, client, weight, driver_id, vehicle_id, eta, status, notes } = req.body;
+        
+        await db.query(
+            `UPDATE shipments SET 
+             destination = ?, 
+             client = ?, 
+             weight = ?, 
+             driver_id = ?, 
+             vehicle_id = ?, 
+             eta = ?, 
+             status = ?, 
+             notes = ?
+             WHERE id = ?`,
+            [destination, client, weight, driver_id, vehicle_id, eta, status, notes, id]
+        );
+        
+        res.json({ message: 'Shipment updated successfully' });
+    } catch (error) {
+        console.error('Error updating shipment:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// DELETE shipment
+app.delete('/api/shipments/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query('DELETE FROM shipments WHERE id = ?', [id]);
+        res.json({ message: 'Shipment deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting shipment:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ==================== SYSTEM LOGS ROUTES ====================
+
+// GET - Fetch all logs
+app.get('/api/logs', async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM system_logs ORDER BY created_at DESC LIMIT 50'
+        );
+        console.log(`📋 Found ${rows.length} logs`);
+        res.json(rows || []);
+    } catch (error) {
+        console.error('❌ Error fetching logs:', error);
+        res.json([]);
+    }
+});
+
+// POST - Create new log
+app.post('/api/logs', async (req, res) => {
+    try {
+        const { type, title, description, time } = req.body;
+        
+        const [result] = await db.query(
+            `INSERT INTO system_logs (type, title, description, time) 
+             VALUES (?, ?, ?, ?)`,
+            [type, title, description, time || new Date().toLocaleString()]
+        );
+        
+        console.log('✅ Log created:', title);
+        res.status(201).json({ 
+            id: result.insertId,
+            message: 'Log created successfully' 
+        });
+    } catch (error) {
+        console.error('❌ Error creating log:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+    // ==========================================
+// MAINTENANCE LOGS ROUTES
+// ==========================================
+
+// GET all maintenance logs with vehicle details
+app.get('/api/maintenance', async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                ml.*,
+                v.vehicle_id,
+                v.license_plate,
+                v.company_name,
+                v.type as vehicle_type
+            FROM maintenance_logs ml
+            LEFT JOIN vehicles v ON ml.vehicle_id = v.id
+            ORDER BY ml.created_at DESC
+        `;
+        const [rows] = await db.query(query);
+        console.log(`📋 Fetched ${rows.length} maintenance logs`);
+        res.json(rows);
+    } catch (error) {
+        console.error('❌ Error fetching maintenance logs:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to fetch maintenance logs',
+            error: error.message 
+        });
+    }
+});
+
+// POST create new maintenance log
+app.post('/api/maintenance', async (req, res) => {
+    try {
+        console.log('📝 Creating maintenance log...');
+        console.log('Request body:', req.body);
+
+        const {
+            vehicle_id,
+            maintenance_type,
+            category,
+            description,
+            service_date,
+            cost,
+            status = 'In Progress'
+        } = req.body;
+
+        // Validation
+        if (!vehicle_id) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Vehicle ID is required' 
+            });
+        }
+        if (!description) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Description is required' 
+            });
+        }
+        if (!service_date) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Service date is required' 
+            });
+        }
+
+        // Check if vehicle exists
+        const [vehicleCheck] = await db.query(
+            'SELECT id FROM vehicles WHERE id = ?',
+            [vehicle_id]
+        );
+
+        if (vehicleCheck.length === 0) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Vehicle not found' 
+            });
+        }
+
+        const query = `
+            INSERT INTO maintenance_logs 
+            (vehicle_id, maintenance_type, category, description, service_date, cost, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const [result] = await db.query(query, [
+            vehicle_id,
+            maintenance_type || null,
+            category || null,
+            description,
+            service_date,
+            cost || 0,
+            status
+        ]);
+
+        // Get the inserted record
+        const [newLog] = await db.query(
+            `SELECT 
+                ml.*,
+                v.vehicle_id,
+                v.license_plate,
+                v.company_name
+            FROM maintenance_logs ml
+            LEFT JOIN vehicles v ON ml.vehicle_id = v.id
+            WHERE ml.id = ?`,
+            [result.insertId]
+        );
+
+        console.log('✅ Maintenance log created with ID:', result.insertId);
+        res.status(201).json({
+            success: true,
+            message: 'Maintenance log created successfully',
+            data: newLog[0]
+        });
+
+    } catch (error) {
+        console.error('❌ Error creating maintenance log:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to create maintenance log',
+            error: error.message 
+        });
+    }
+});
+
+// PUT update maintenance log
+app.put('/api/maintenance/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            maintenance_type,
+            category,
+            description,
+            service_date,
+            cost,
+            status
+        } = req.body;
+
+        // Check if log exists
+        const [existingLog] = await db.query(
+            'SELECT id FROM maintenance_logs WHERE id = ?',
+            [id]
+        );
+
+        if (existingLog.length === 0) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Maintenance log not found' 
+            });
+        }
+
+        const query = `
+            UPDATE maintenance_logs 
+            SET 
+                maintenance_type = ?,
+                category = ?,
+                description = ?,
+                service_date = ?,
+                cost = ?,
+                status = ?
+            WHERE id = ?
+        `;
+
+        await db.query(query, [
+            maintenance_type || null,
+            category || null,
+            description,
+            service_date,
+            cost || 0,
+            status || 'In Progress',
+            id
+        ]);
+
+        // Get updated record
+        const [updatedLog] = await db.query(
+            `SELECT 
+                ml.*,
+                v.vehicle_id,
+                v.license_plate,
+                v.company_name
+            FROM maintenance_logs ml
+            LEFT JOIN vehicles v ON ml.vehicle_id = v.id
+            WHERE ml.id = ?`,
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Maintenance log updated successfully',
+            data: updatedLog[0]
+        });
+
+    } catch (error) {
+        console.error('❌ Error updating maintenance log:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to update maintenance log',
+            error: error.message 
+        });
+    }
+});
+
+// DELETE maintenance log
+app.delete('/api/maintenance/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if log exists
+        const [existingLog] = await db.query(
+            'SELECT id FROM maintenance_logs WHERE id = ?',
+            [id]
+        );
+
+        if (existingLog.length === 0) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'Maintenance log not found' 
+            });
+        }
+
+        await db.query(
+            'DELETE FROM maintenance_logs WHERE id = ?',
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Maintenance log deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('❌ Error deleting maintenance log:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to delete maintenance log',
+            error: error.message 
+        });
+    }
+});
 
     // 🔴 LIVE GET ROUTE: All missing columns from the database (Aadhaar, PAN, Bank Infrastructure) are included here.
     app.get('/api/drivers', async (req, res) => {
@@ -111,7 +489,7 @@
 app.put('/api/vehicles/:id', async (req, res) => {
   try {
     const vehicleId = req.params.id;
-    const { vehicle_id, type, company_name, year, license_plate, puc_number, notes } = req.body;
+    const { vehicle_id, type, company_name, year, license_plate, puc_certificate_number, notes } = req.body;
     
     console.log('🔄 Updating vehicle ID:', vehicleId);
     console.log('📦 Received data:', req.body);
@@ -134,7 +512,7 @@ app.put('/api/vehicles/:id', async (req, res) => {
            company_name = ?, 
            year = ?, 
            license_plate = ?, 
-           puc_number = ?, 
+           puc_certificate_number = ?, 
            notes = ?
        WHERE id = ?`,
       [
@@ -143,7 +521,7 @@ app.put('/api/vehicles/:id', async (req, res) => {
         company_name || existingVehicle[0].company_name,
         year || existingVehicle[0].year,
         license_plate || existingVehicle[0].license_plate,
-        puc_number || existingVehicle[0].puc_number,
+        puc_certificate_number || existingVehicle[0].puc_certificate_number,
         notes || existingVehicle[0].notes,
         vehicleId
       ]
@@ -186,7 +564,7 @@ app.post('/api/vehicles', async (req, res) => {
         
         // Database table ke exact column names ke saath match karein
         const sql = `INSERT INTO vehicles 
-            (vehicle_id, type, company_name, year, license_plate, puc_number, notes) 
+            (vehicle_id, type, company_name, year, license_plate, puc_certificate_number, notes) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`;
             
         const [result] = await db.query(sql, [
@@ -230,15 +608,6 @@ app.get('/api/vehicles', async (req, res) => {
     }
 });
 
-    // GET: Fetch Vehicles Route
-    app.get('/api/vehicles', async (req, res) => {
-        try {
-            const [rows] = await db.query("SELECT * FROM vehicles ORDER BY id DESC");
-            res.json(rows);
-        } catch (err) {
-            res.status(500).json({ error: "Database fetch failed" });
-        }
-    });
     app.get('/', (req, res) => {
         res.send('<h1>FleetChain Hybrid Web3 Backend is running perfectly!</h1>');
     });

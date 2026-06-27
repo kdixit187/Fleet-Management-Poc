@@ -1,27 +1,173 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 export default function LiveMap() {
   const [selectedVehicle, setSelectedVehicle] = useState('TRK-4022');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [vehicles, setVehicles] = useState([]);
+  const [shipments, setShipments] = useState([]);
+  const [drivers, setDrivers] = useState([]);
 
-  const liveVehicles = [
-    { id: 'TRK-4022', driver: 'Rajesh Kumar', route: 'Mumbai → Delhi', startCity: 'Mumbai', endCity: 'Delhi', status: 'On Time', load: '14', speed: '68', eta: '4 hrs', pct: '65%' },
-    { id: 'TRK-8819', driver: 'Amit Sharma', route: 'Jaipur → Udaipur', startCity: 'Jaipur', endCity: 'Udaipur', status: 'Delayed', load: '18', speed: '52', eta: '5 hrs', pct: '40%', delayTime: '+2 hrs delay' },
-    { id: 'TRK-1092', driver: 'Vikram Singh', route: 'Ahmedabad → Bhilwara', startCity: 'Ahmedabad', endCity: 'Bhilwara', status: 'On Time', load: '12', speed: '72', eta: '2 hrs', pct: '75%' },
-    { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', startCity: 'Delhi', endCity: 'Chandigarh', status: 'Critical', load: '22', speed: '0', eta: 'N/A', pct: '25%', issue: '⚠️ Mechanical' },
-  ];
+  // ==================== API CALLS ====================
+  const API_BASE = 'http://localhost:5000/api';
 
-  // Map trajectory dictionary configuration linking IDs to positions
-  const mapCoordinates = {
-    "TRK-4022": { top: "42%", left: "46%", path: "M 80 320 Q 240 120, 420 220 T 720 100", startPos: { bottom: "18%", left: "8%" }, endPos: { top: "18%", right: "12%" }, theme: "var(--primary)" },
-    "TRK-8819": { top: "58%", left: "32%", path: "M 120 150 L 320 340", startPos: { top: "30%", left: "15%" }, endPos: { bottom: "25%", left: "38%" }, theme: "var(--warning)" },
-    "TRK-1092": { top: "72%", left: "22%", path: "M 40 410 Q 120 380, 240 310", startPos: { bottom: "10%", left: "5%" }, endPos: { bottom: "35%", left: "28%" }, theme: "var(--success)" },
-    "TRK-5541": { top: "24%", left: "62%", path: "M 380 110 L 620 40", startPos: { top: "22%", left: "45%" }, endPos: { top: "10%", right: "25%" }, theme: "var(--danger)" }
+  useEffect(() => {
+    fetchVehicles();
+    fetchShipments();
+    fetchDrivers();
+  }, []);
+
+  const fetchVehicles = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/vehicles`);
+      const data = await response.json();
+      if (response.ok) {
+        setVehicles(data);
+      }
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+    }
   };
 
-  // Synchronized search index and status tag filters pipeline
+  const fetchShipments = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/shipments`);
+      const data = await response.json();
+      if (response.ok) {
+        setShipments(data);
+      }
+    } catch (error) {
+      console.error('Error fetching shipments:', error);
+    }
+  };
+
+  const fetchDrivers = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/drivers`);
+      const data = await response.json();
+      if (response.ok) {
+        setDrivers(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
+    }
+  };
+
+  // ==================== HELPERS ====================
+  const getDriverName = (driverId) => {
+    const driver = drivers.find(d => d.id === driverId);
+    return driver ? driver.full_name : 'Unknown';
+  };
+
+  const getVehicleStatus = (vehicleId) => {
+    const shipment = shipments.find(s => s.vehicle_id === vehicleId);
+    return shipment ? shipment.status : 'Available';
+  };
+
+  const getVehicleRoute = (vehicleId) => {
+    const shipment = shipments.find(s => s.vehicle_id === vehicleId);
+    return shipment ? shipment.destination : 'N/A';
+  };
+
+  const getVehicleETA = (vehicleId) => {
+    const shipment = shipments.find(s => s.vehicle_id === vehicleId);
+    if (shipment && shipment.eta) {
+      const date = new Date(shipment.eta);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+    return 'N/A';
+  };
+
+  // ==================== MAP VEHICLES DATA ====================
+  const liveVehicles = useMemo(() => {
+    if (vehicles.length === 0) {
+      // Fallback data if no vehicles from API
+      return [
+        { id: 'TRK-4022', driver: 'Rajesh Kumar', route: 'Mumbai → Delhi', startCity: 'Mumbai', endCity: 'Delhi', status: 'On Time', load: '14', speed: '68', eta: '4 hrs', pct: '65%' },
+        { id: 'TRK-8819', driver: 'Amit Sharma', route: 'Jaipur → Udaipur', startCity: 'Jaipur', endCity: 'Udaipur', status: 'Delayed', load: '18', speed: '52', eta: '5 hrs', pct: '40%' },
+        { id: 'TRK-1092', driver: 'Vikram Singh', route: 'Ahmedabad → Bhilwara', startCity: 'Ahmedabad', endCity: 'Bhilwara', status: 'On Time', load: '12', speed: '72', eta: '2 hrs', pct: '75%' },
+        { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', startCity: 'Delhi', endCity: 'Chandigarh', status: 'Critical', load: '22', speed: '0', eta: 'N/A', pct: '25%' },
+      ];
+    }
+
+    return vehicles.map((vehicle, index) => {
+      const status = getVehicleStatus(vehicle.id);
+      const route = getVehicleRoute(vehicle.id);
+      const driverName = getDriverName(vehicle.driver_id) || 'Unassigned';
+      
+      // Map status to display status
+      let displayStatus = 'On Time';
+      let statusColor = 'var(--success)';
+      let pct = '50%';
+      
+      if (status === 'Delivered') {
+        displayStatus = 'Completed';
+        statusColor = 'var(--success)';
+        pct = '100%';
+      } else if (status === 'In Transit') {
+        displayStatus = 'On Time';
+        statusColor = 'var(--success)';
+        pct = '65%';
+      } else if (status === 'Delayed') {
+        displayStatus = 'Delayed';
+        statusColor = 'var(--warning)';
+        pct = '40%';
+      } else if (status === 'Alert') {
+        displayStatus = 'Critical';
+        statusColor = 'var(--danger)';
+        pct = '25%';
+      } else if (status === 'Loading') {
+        displayStatus = 'Loading';
+        statusColor = 'var(--info)';
+        pct = '30%';
+      }
+
+      return {
+        id: vehicle.vehicle_id || vehicle.id,
+        driver: driverName,
+        route: `${vehicle.company_name || 'N/A'} → ${route}`,
+        startCity: vehicle.company_name || 'N/A',
+        endCity: route || 'N/A',
+        status: displayStatus,
+        load: '12',
+        speed: Math.floor(Math.random() * 40 + 40),
+        eta: getVehicleETA(vehicle.id),
+        pct: pct,
+        statusColor: statusColor
+      };
+    });
+  }, [vehicles, shipments, drivers]);
+
+  // Map coordinates for vehicles
+  const mapCoordinates = useMemo(() => {
+    const coords = {};
+    liveVehicles.forEach((v, index) => {
+      const positions = [
+        { top: "42%", left: "46%", path: "M 80 320 Q 240 120, 420 220 T 720 100", startPos: { bottom: "18%", left: "8%" }, endPos: { top: "18%", right: "12%" } },
+        { top: "58%", left: "32%", path: "M 120 150 L 320 340", startPos: { top: "30%", left: "15%" }, endPos: { bottom: "25%", left: "38%" } },
+        { top: "72%", left: "22%", path: "M 40 410 Q 120 380, 240 310", startPos: { bottom: "10%", left: "5%" }, endPos: { bottom: "35%", left: "28%" } },
+        { top: "24%", left: "62%", path: "M 380 110 L 620 40", startPos: { top: "22%", left: "45%" }, endPos: { top: "10%", right: "25%" } },
+        { top: "35%", left: "55%", path: "M 200 200 Q 400 100, 600 300", startPos: { top: "15%", left: "25%" }, endPos: { bottom: "30%", right: "15%" } },
+        { top: "65%", left: "45%", path: "M 100 500 Q 300 400, 500 500", startPos: { bottom: "10%", left: "15%" }, endPos: { bottom: "20%", right: "20%" } },
+      ];
+      coords[v.id] = {
+        ...positions[index % positions.length],
+        theme: v.status === 'Completed' ? 'var(--success)' : 
+               v.status === 'On Time' ? 'var(--success)' : 
+               v.status === 'Delayed' ? 'var(--warning)' : 
+               v.status === 'Critical' ? 'var(--danger)' : 'var(--info)'
+      };
+    });
+    return coords;
+  }, [liveVehicles]);
+
+  // Filtered vehicles
   const filteredVehicles = useMemo(() => {
     return liveVehicles.filter(truck => {
       const query = searchQuery.toLowerCase().trim();
@@ -34,57 +180,54 @@ export default function LiveMap() {
 
       return matchesSearch && matchesFilter;
     });
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, statusFilter, liveVehicles]);
 
-  const currentVehicleData = liveVehicles.find(v => v.id === selectedVehicle) || liveVehicles[0];
-  const telemetry = mapCoordinates[currentVehicleData.id] || mapCoordinates["TRK-4022"];
+  const currentVehicleData = liveVehicles.find(v => v.id === selectedVehicle) || liveVehicles[0] || {};
+  const telemetry = mapCoordinates[currentVehicleData.id] || mapCoordinates[liveVehicles[0]?.id] || {};
 
-  // Total calculated metrics
-  const onTimeCount = liveVehicles.filter(v => v.status === 'On Time').length;
+  // Stats
+  const onTimeCount = liveVehicles.filter(v => v.status === 'On Time' || v.status === 'Completed').length;
   const delayedCount = liveVehicles.filter(v => v.status === 'Delayed').length;
   const criticalCount = liveVehicles.filter(v => v.status === 'Critical').length;
 
   return (
     <ContainerWrapper>
-      {/* Title Header Section */}
+      {/* Header */}
       <HeaderSection>
         <div>
-          <h2><i className="bi bi-map text-primary me-2"></i>Fleet Status Dashboard</h2>
+          <h2>📍 Live-Status Dashboard</h2>
           <p>Real-time asset telemetry configurations, operational health metrics, and breakdown logs.</p>
         </div>
         <Toolbar>
-          {/* <button type="button" className="btn-outline" onClick={() => window.location.reload()}>
+          <button type="button" className="btn-outline" onClick={() => window.location.reload()}>
             <i className="bi bi-arrow-repeat me-1"></i> Refresh
           </button>
-          <button type="button" className="btn-primary">
-            <i className="bi bi-plus-lg me-1"></i> Add Vehicle
-          </button> */}
         </Toolbar>
       </HeaderSection>
 
-      {/* KPI Index Metrics Summary Row */}
+      {/* KPI Metrics */}
       <MetricsRow>
         <KpiCard border="var(--primary)">
           <p className="kpi-title">Total Assets Index</p>
-          <h3>124 Trucks</h3>
+          <h3>{vehicles.length} Trucks</h3>
         </KpiCard>
         <KpiCard border="var(--success)">
           <p className="kpi-title">Available (Ready)</p>
-          <h3 className="text-success">74 Active</h3>
+          <h3 className="text-success">{liveVehicles.filter(v => v.status === 'On Time' || v.status === 'Completed').length} Active</h3>
         </KpiCard>
         <KpiCard border="var(--info)">
           <p className="kpi-title">In Transit (On Duty)</p>
-          <h3 className="text-info">35 Fleet</h3>
+          <h3 className="text-info">{liveVehicles.filter(v => v.status === 'On Time').length} Fleet</h3>
         </KpiCard>
         <KpiCard border="var(--warning)">
           <p className="kpi-title">Under Maintenance</p>
-          <h3 className="text-warning">15 Workshop</h3>
+          <h3 className="text-warning">{liveVehicles.filter(v => v.status === 'Delayed' || v.status === 'Critical').length} Workshop</h3>
         </KpiCard>
       </MetricsRow>
 
-      {/* Main Structural Framework Layout splits */}
+      {/* Main Layout */}
       <MainGridLayout>
-        {/* Left Side Navigation Panel Card */}
+        {/* Sidebar */}
         <SidebarCard>
           <div className="card-header-custom">
             <h6>
@@ -97,7 +240,6 @@ export default function LiveMap() {
           </div>
 
           <SidebarBody>
-            {/* Live Search Controls Group */}
             <SearchGroupWrapper>
               <span className="search-icon"><i className="bi bi-search"></i></span>
               <input 
@@ -113,7 +255,6 @@ export default function LiveMap() {
               )}
             </SearchGroupWrapper>
 
-            {/* Quick Status Filters Toggle Bar */}
             <StatusToggleGroup>
               <button className={statusFilter === 'all' ? 'active' : ''} onClick={() => setStatusFilter('all')}>All</button>
               <button className={`btn-ontime ${statusFilter === 'ontime' ? 'active' : ''}`} onClick={() => setStatusFilter('ontime')}>
@@ -127,54 +268,55 @@ export default function LiveMap() {
               </button>
             </StatusToggleGroup>
 
-            {/* Scrollable Vehicle Collection Group Component */}
             <VehicleScrollListWrapper>
-              {filteredVehicles.map((truck) => {
-                const isActive = truck.id === selectedVehicle;
-                return (
-                  <VehicleItemButton 
-                    key={truck.id} 
-                    className={isActive ? 'active' : ''} 
-                    onClick={() => setSelectedVehicle(truck.id)}
-                  >
-                    <div className="item-top-row">
-                      <div className="truck-info-block">
-                        <i className={`bi bi-truck fs-4 icon-display ${truck.status === 'Delayed' ? 'text-warning' : truck.status === 'Critical' ? 'text-danger animate-flash' : ''}`}></i>
-                        <div>
-                          <div className="truck-id-txt">{truck.id}</div>
-                          <div className="route-lbl"><i className="bi bi-geo-alt me-1"></i>{truck.route}</div>
+              {filteredVehicles.length > 0 ? (
+                filteredVehicles.map((truck) => {
+                  const isActive = truck.id === selectedVehicle;
+                  const isCompleted = truck.status === 'Completed';
+                  return (
+                    <VehicleItemButton 
+                      key={truck.id} 
+                      className={isActive ? 'active' : ''} 
+                      onClick={() => setSelectedVehicle(truck.id)}
+                    >
+                      <div className="item-top-row">
+                        <div className="truck-info-block">
+                          <i className={`bi bi-truck fs-4 icon-display ${truck.status === 'Delayed' ? 'text-warning' : truck.status === 'Critical' ? 'text-danger' : isCompleted ? 'text-success' : ''}`}></i>
+                          <div>
+                            <div className="truck-id-txt">{truck.id}</div>
+                            <div className="route-lbl"><i className="bi bi-geo-alt me-1"></i>{truck.route}</div>
+                          </div>
+                        </div>
+                        <div className="status-eta-block">
+                          <span className={`badge-status ${truck.status === 'On Time' || truck.status === 'Completed' ? 'bg-success-subtle' : truck.status === 'Delayed' ? 'bg-warning-subtle' : 'bg-danger-subtle'}`}>
+                            {truck.status}
+                          </span>
+                          <div className="eta-lbl">ETA: {truck.eta}</div>
                         </div>
                       </div>
-                      <div className="status-eta-block">
-                        <span className={`badge-status ${truck.status === 'On Time' ? 'bg-success-subtle' : truck.status === 'Delayed' ? 'bg-warning-subtle' : 'bg-danger-subtle'}`}>
-                          {truck.status}
-                        </span>
-                        <div className="eta-lbl">{truck.status === 'Critical' ? truck.issue : `ETA: ${truck.eta}`}</div>
-                      </div>
-                    </div>
 
-                    {/* Completion Track Progress */}
-                    <div className="progress-container">
-                      <ProgressTrackBase>
-                        <ProgressBarFill 
-                          width={truck.pct} 
-                          color={truck.status === 'On Time' ? 'var(--success)' : truck.status === 'Delayed' ? 'var(--warning)' : 'var(--danger)'}
-                        />
-                      </ProgressTrackBase>
-                      <div className="progress-labels-row">
-                        <span>{truck.startCity}</span>
-                        <span>{truck.pct}</span>
-                        <span>{truck.endCity}</span>
+                      <div className="progress-container">
+                        <ProgressTrackBase>
+                          <ProgressBarFill 
+                            width={truck.pct} 
+                            color={truck.status === 'Completed' ? 'var(--success)' : truck.status === 'On Time' ? 'var(--success)' : truck.status === 'Delayed' ? 'var(--warning)' : 'var(--danger)'}
+                          />
+                        </ProgressTrackBase>
+                        <div className="progress-labels-row">
+                          <span>{truck.startCity}</span>
+                          <span>{truck.pct}</span>
+                          <span>{truck.endCity}</span>
+                        </div>
                       </div>
-                    </div>
-                  </VehicleItemButton>
-                );
-              })}
-              {filteredVehicles.length === 0 && <NoDataPlaceholder>No matching assets found.</NoDataPlaceholder>}
+                    </VehicleItemButton>
+                  );
+                })
+              ) : (
+                <NoDataPlaceholder>No matching assets found.</NoDataPlaceholder>
+              )}
             </VehicleScrollListWrapper>
           </SidebarBody>
 
-          {/* Sticky Total Counters Summary Footer */}
           <SidebarFooterMetricsGroup>
             <div>
               <span className="lbl">On Time</span>
@@ -191,19 +333,20 @@ export default function LiveMap() {
           </SidebarFooterMetricsGroup>
         </SidebarCard>
 
-        {/* Right Side Visual Engine Canvas Render Card */}
+        {/* Map */}
         <MapDisplayCard>
           <CanvasContainer>
-            {/* Structural Vector Space Paths */}
             <SvgViewSpace id="mapSvgCanvas">
-              <path 
-                d={telemetry.path}
-                stroke="url(#activeRouteGrad)" 
-                strokeWidth="4" 
-                fill="none" 
-                strokeDasharray="8 5"
-                strokeLinecap="round" 
-              />
+              {telemetry.path && (
+                <path 
+                  d={telemetry.path}
+                  stroke="url(#activeRouteGrad)" 
+                  strokeWidth="4" 
+                  fill="none" 
+                  strokeDasharray="8 5"
+                  strokeLinecap="round" 
+                />
+              )}
               <defs>
                 <linearGradient id="activeRouteGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
@@ -213,57 +356,59 @@ export default function LiveMap() {
               </defs>
             </SvgViewSpace>
 
-            {/* Coordinate Anchors Start and Stop */}
-            <MapAnchorNode style={telemetry.startPos}>
-              <PulseRadarPoint color="var(--success)" />
-              <div className="node-lbl">{currentVehicleData.startCity}</div>
-            </MapAnchorNode>
+            {telemetry.startPos && (
+              <MapAnchorNode style={telemetry.startPos}>
+                <PulseRadarPoint color="var(--success)" />
+                <div className="node-lbl">{currentVehicleData.startCity || 'Start'}</div>
+              </MapAnchorNode>
+            )}
 
-            <MapAnchorNode style={telemetry.endPos}>
-              <PulseRadarPoint color="var(--danger)" />
-              <div className="node-lbl">{currentVehicleData.endCity}</div>
-            </MapAnchorNode>
+            {telemetry.endPos && (
+              <MapAnchorNode style={telemetry.endPos}>
+                <PulseRadarPoint color="var(--danger)" />
+                <div className="node-lbl">{currentVehicleData.endCity || 'End'}</div>
+              </MapAnchorNode>
+            )}
 
-            {/* Interpolated Target Tracking Marker */}
-            <LiveVehicleMarker style={{ top: telemetry.top, left: telemetry.left }}>
-              <MarkerCircleIcon style={{ backgroundColor: telemetry.theme }}>
-                <i className="bi bi-truck text-white"></i>
-              </MarkerCircleIcon>
-              <div className="marker-id-tag">{currentVehicleData.id}</div>
-              <RadarEchoCircle style={{ color: telemetry.theme }} />
-            </LiveVehicleMarker>
+            {telemetry.top && telemetry.left && (
+              <LiveVehicleMarker style={{ top: telemetry.top, left: telemetry.left }}>
+                <MarkerCircleIcon style={{ backgroundColor: telemetry.theme || 'var(--primary)' }}>
+                  <i className="bi bi-truck text-white"></i>
+                </MarkerCircleIcon>
+                <div className="marker-id-tag">{currentVehicleData.id}</div>
+                <RadarEchoCircle style={{ color: telemetry.theme || 'var(--primary)' }} />
+              </LiveVehicleMarker>
+            )}
 
-            {/* Visual Vector Grid Overlay Context background */}
             <div className="grid-overlay"></div>
             <div className="globe-ambient-backplate">
               <i className="bi bi-globe"></i>
             </div>
           </CanvasContainer>
 
-          {/* Telemetry HUD Control Data Bar Row */}
           <TelemetryControlFooterBar>
             <div className="profile-identity-pane">
               <div className="icon-badge-box">
                 <i className="bi bi-radar fs-3"></i>
               </div>
               <div>
-                <div className="pane-truck-id">{currentVehicleData.id}</div>
-                <div className="pane-driver-name">{currentVehicleData.driver}</div>
+                <div className="pane-truck-id">{currentVehicleData.id || 'N/A'}</div>
+                <div className="pane-driver-name">{currentVehicleData.driver || 'Unknown'}</div>
               </div>
             </div>
 
             <HudTelemetryValuesGrid>
               <div className="hud-metric-unit-item">
                 <span className="lbl">Current Speed</span>
-                <span className="val">{currentVehicleData.speed} <span className="unit">km/h</span></span>
+                <span className="val">{currentVehicleData.speed || 0} <span className="unit">km/h</span></span>
               </div>
               <div className="hud-metric-unit-item border-left-split">
                 <span className="lbl">Timeline ETA</span>
-                <span className="val text-success">{currentVehicleData.eta.replace(' hrs', '')} <span className="unit">hrs</span></span>
+                <span className="val text-success">{currentVehicleData.eta || 'N/A'} <span className="unit"></span></span>
               </div>
               <div className="hud-metric-unit-item border-left-split">
                 <span className="lbl">Net Load Capacity</span>
-                <span className="val">{currentVehicleData.load} <span className="unit">tons</span></span>
+                <span className="val">{currentVehicleData.load || 0} <span className="unit">tons</span></span>
               </div>
             </HudTelemetryValuesGrid>
           </TelemetryControlFooterBar>
@@ -273,7 +418,7 @@ export default function LiveMap() {
   );
 }
 
-/* ---------------- Styled Components Design Variables ---------------- */
+// ==================== STYLED COMPONENTS ====================
 
 const alphaBlink = keyframes`
   0%, 100% { opacity: 0.4; }
@@ -295,6 +440,7 @@ const ContainerWrapper = styled.div`
   max-width: 1440px;
   margin: 0 auto;
   padding: 24px;
+  padding-top: 110px;
   background-color: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 `;
@@ -369,8 +515,7 @@ const MainGridLayout = styled.div`
   @media (max-width: 1200px) { grid-template-columns: 1fr; }
 `;
 
-/* ---------------- Sidebar Navigation Area ---------------- */
-
+// Sidebar
 const SidebarCard = styled.div`
   background: #ffffff;
   border-radius: 12px;
@@ -487,7 +632,6 @@ const VehicleItemButton = styled.div`
   .truck-info-block { display: flex; gap: 12px; align-items: flex-start; }
   .truck-id-txt { font-size: 15px; font-weight: 700; color: #1e293b; }
   .route-lbl { font-size: 12px; color: #64748b; margin-top: 2px; }
-  .driver-lbl { font-size: 12px; color: #64748b; margin-top: 6px; }
   
   .status-eta-block { text-align: right; }
   .badge-status { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
@@ -522,19 +666,21 @@ const SidebarFooterMetricsGroup = styled.div`
   background: #fafafa;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  text-center: center;
+  text-align: center;
 
   div { display: flex; flex-direction: column; align-items: center; }
   .lbl { font-size: 11px; color: #64748b; font-weight: 500; }
   .val { font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .text-success { color: var(--success); }
+  .text-warning { color: var(--warning); }
+  .text-danger { color: var(--danger); }
 `;
 
 const NoDataPlaceholder = styled.p`
   font-size: 13px; color: #64748b; text-align: center; padding: 24px 0; margin: 0;
 `;
 
-/* ---------------- Right Map Visualization Engine Area ---------------- */
-
+// Map
 const MapDisplayCard = styled.div`
   background: #ffffff;
   border-radius: 12px;

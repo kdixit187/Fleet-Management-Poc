@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 26, 2026 at 10:36 AM
+-- Generation Time: Jun 27, 2026 at 11:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -67,6 +67,122 @@ INSERT INTO `drivers` (`id`, `full_name`, `email`, `phone`, `password`, `dob`, `
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `maintenance_logs`
+--
+
+CREATE TABLE `maintenance_logs` (
+  `id` int(11) NOT NULL,
+  `vehicle_id` int(11) NOT NULL,
+  `maintenance_type` varchar(50) DEFAULT NULL,
+  `category` varchar(50) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `service_date` date DEFAULT NULL,
+  `cost` decimal(10,2) DEFAULT 0.00,
+  `status` varchar(50) DEFAULT 'In Progress',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `maintenance_logs`
+--
+
+INSERT INTO `maintenance_logs` (`id`, `vehicle_id`, `maintenance_type`, `category`, `description`, `service_date`, `cost`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Preventive', 'Breakdown', 'cdc', '5555-05-01', 4564312.00, 'Completed', '2026-06-27 06:18:56', '2026-06-27 06:23:53');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `operators`
+--
+
+CREATE TABLE `operators` (
+  `operator_id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `role` varchar(20) DEFAULT 'operator',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `operators`
+--
+
+INSERT INTO `operators` (`operator_id`, `username`, `email`, `password_hash`, `role`, `created_at`) VALUES
+(1, 'admin', 'admin@cargomax.com', '$2b$10$hashedstring...', 'admin', '2026-06-26 08:59:05');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `shipments`
+--
+
+CREATE TABLE `shipments` (
+  `id` int(11) NOT NULL,
+  `destination` varchar(255) NOT NULL,
+  `client` varchar(255) DEFAULT NULL,
+  `weight` varchar(50) DEFAULT NULL,
+  `driver_id` int(11) DEFAULT NULL,
+  `vehicle_id` int(11) DEFAULT NULL,
+  `eta` datetime DEFAULT NULL,
+  `status` varchar(50) DEFAULT 'Loading',
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `shipments`
+--
+
+INSERT INTO `shipments` (`id`, `destination`, `client`, `weight`, `driver_id`, `vehicle_id`, `eta`, `status`, `notes`, `created_at`, `updated_at`) VALUES
+(1, 'udaipur', 'kartikey', NULL, 9, 1, '0000-00-00 00:00:00', 'Delivered', 'ok', '2026-06-27 06:43:03', '2026-06-27 08:44:05'),
+(2, 'jodhpur', 'aun', NULL, 8, 1, '2026-06-29 21:19:00', 'Delivered', '', '2026-06-27 08:19:37', '2026-06-27 08:44:14'),
+(3, 'jaipur', NULL, NULL, 4, 1, '2026-06-30 14:08:00', 'In Transit', 'xsxs', '2026-06-27 08:38:11', '2026-06-27 08:38:11'),
+(4, 'jaipur', 'kamalesh', NULL, 7, 1, '0000-00-00 00:00:00', 'In Transit', '', '2026-06-27 08:44:34', '2026-06-27 08:44:34'),
+(5, 'kolkata', 'ok', NULL, 6, 1, '0000-00-00 00:00:00', 'Delayed', '', '2026-06-27 08:48:04', '2026-06-27 08:48:04');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `system_logs`
+--
+
+CREATE TABLE `system_logs` (
+  `id` int(11) NOT NULL,
+  `type` varchar(50) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `time` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `system_logs`
+--
+
+INSERT INTO `system_logs` (`id`, `type`, `title`, `description`, `time`, `created_at`) VALUES
+(1, 'dispatch', '🚚 New Shipment Created', 'Shipment #1 dispatched to Mumbai', '2 mins ago', '2026-06-27 07:10:55'),
+(2, 'delivered', '✅ Shipment Delivered', 'Shipment #2 successfully delivered to Delhi', '15 mins ago', '2026-06-27 07:10:55'),
+(3, 'alert', '⚠️ Route Alert', 'Heavy traffic on NH-48, delays expected', '1 hour ago', '2026-06-27 07:10:55'),
+(4, 'maintenance', '🔧 Vehicle Maintenance', 'VH-203 service completed at workshop', '2 hours ago', '2026-06-27 07:10:55'),
+(5, 'dispatch', '📦 Shipment Dispatched', 'Shipment #3 assigned to Rajesh Kumar', '3 hours ago', '2026-06-27 07:10:55'),
+(6, 'delivered', '✅ Delivery Confirmed', 'Shipment #4 delivered to Bangalore warehouse', '5 hours ago', '2026-06-27 07:10:55'),
+(7, 'alert', '⚠️ Weather Alert', 'Rain expected in Mumbai region', '6 hours ago', '2026-06-27 07:10:55'),
+(8, 'dispatch', '🚚 New Shipment Created', 'Shipment #5 dispatched to Chennai Port', '8 hours ago', '2026-06-27 07:10:55'),
+(9, 'maintenance', '🔧 Tire Replacement', 'VH-201 tires replaced', '1 day ago', '2026-06-27 07:10:55'),
+(10, 'delivered', '✅ Shipment Delivered', 'Shipment #6 delivered to Hyderabad', '1 day ago', '2026-06-27 07:10:55'),
+(11, 'dispatch', '🚚 New Shipment Created', 'Shipment #3 dispatched to jaipur', '02:08 pm', '2026-06-27 08:38:11'),
+(12, 'dispatch', '✏️ Shipment Updated', 'Shipment #2 status changed to Delivered', '02:11 pm', '2026-06-27 08:41:42'),
+(13, 'dispatch', '✏️ Shipment Updated', 'Shipment #1 status changed to Delivered', '02:14 pm', '2026-06-27 08:44:05'),
+(14, 'dispatch', '✏️ Shipment Updated', 'Shipment #2 status changed to Delivered', '02:14 pm', '2026-06-27 08:44:14'),
+(15, 'dispatch', '🚚 New Shipment Created', 'Shipment #4 dispatched to jaipur', '02:14 pm', '2026-06-27 08:44:34'),
+(16, 'dispatch', '🚚 New Shipment Created', 'Shipment #5 dispatched to kolkata', '02:18 pm', '2026-06-27 08:48:04');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `vehicles`
 --
 
@@ -103,6 +219,35 @@ ALTER TABLE `drivers`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Indexes for table `maintenance_logs`
+--
+ALTER TABLE `maintenance_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vehicle_id` (`vehicle_id`);
+
+--
+-- Indexes for table `operators`
+--
+ALTER TABLE `operators`
+  ADD PRIMARY KEY (`operator_id`),
+  ADD UNIQUE KEY `username` (`username`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `shipments`
+--
+ALTER TABLE `shipments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `driver_id` (`driver_id`),
+  ADD KEY `vehicle_id` (`vehicle_id`);
+
+--
+-- Indexes for table `system_logs`
+--
+ALTER TABLE `system_logs`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `vehicles`
 --
 ALTER TABLE `vehicles`
@@ -119,10 +264,51 @@ ALTER TABLE `drivers`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+-- AUTO_INCREMENT for table `maintenance_logs`
+--
+ALTER TABLE `maintenance_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `operators`
+--
+ALTER TABLE `operators`
+  MODIFY `operator_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `shipments`
+--
+ALTER TABLE `shipments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `system_logs`
+--
+ALTER TABLE `system_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
 -- AUTO_INCREMENT for table `vehicles`
 --
 ALTER TABLE `vehicles`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `maintenance_logs`
+--
+ALTER TABLE `maintenance_logs`
+  ADD CONSTRAINT `maintenance_logs_ibfk_1` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `shipments`
+--
+ALTER TABLE `shipments`
+  ADD CONSTRAINT `shipments_ibfk_1` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `shipments_ibfk_2` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

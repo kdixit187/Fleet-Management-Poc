@@ -18,7 +18,7 @@ import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.js
 import VehicleView from "../web/src/pages/admin/fleet managemeent/vehicleview.jsx";
 import VehicleEdit from "../web/src/pages/admin/fleet managemeent/vehicleedit.jsx";
 // 📦 SHIPMENT MODULE IMPORTS
-import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx';
+// import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx'; // ❌ FILE DOESN'T EXIST
 import DelayedShipments from '../web/src/pages/admin/shipment/delayedshipments.jsx';
 import AllShipments from "../web/src/pages/admin/shipment/allshipments.jsx"; 
 import Track from "../web/src/pages/admin/shipment/track.jsx"; 
@@ -72,8 +72,8 @@ function App() {
         <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
         <Route path="/delayed" element={<DashboardLayout><DelayedShipments /></DashboardLayout>} />
         <Route path="/track" element={<DashboardLayout><Track /></DashboardLayout>} />
-        <Route path="/new-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} />
-        <Route path="/create-shipment" element={<DashboardLayout><NewShipment /></DashboardLayout>} /> 
+        <Route path="/new-shipment" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
+        <Route path="/create-shipment" element={<DashboardLayout><AllShipments /></DashboardLayout>} /> 
 
         {/* 🟢 SETTINGS MODULE */}
         <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
