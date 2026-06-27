@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 27, 2026 at 11:09 AM
+-- Generation Time: Jun 27, 2026 at 02:31 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -120,6 +120,7 @@ INSERT INTO `operators` (`operator_id`, `username`, `email`, `password_hash`, `r
 
 CREATE TABLE `shipments` (
   `id` int(11) NOT NULL,
+  `tracking_id` varchar(50) DEFAULT NULL,
   `destination` varchar(255) NOT NULL,
   `client` varchar(255) DEFAULT NULL,
   `weight` varchar(50) DEFAULT NULL,
@@ -136,12 +137,12 @@ CREATE TABLE `shipments` (
 -- Dumping data for table `shipments`
 --
 
-INSERT INTO `shipments` (`id`, `destination`, `client`, `weight`, `driver_id`, `vehicle_id`, `eta`, `status`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 'udaipur', 'kartikey', NULL, 9, 1, '0000-00-00 00:00:00', 'Delivered', 'ok', '2026-06-27 06:43:03', '2026-06-27 08:44:05'),
-(2, 'jodhpur', 'aun', NULL, 8, 1, '2026-06-29 21:19:00', 'Delivered', '', '2026-06-27 08:19:37', '2026-06-27 08:44:14'),
-(3, 'jaipur', NULL, NULL, 4, 1, '2026-06-30 14:08:00', 'In Transit', 'xsxs', '2026-06-27 08:38:11', '2026-06-27 08:38:11'),
-(4, 'jaipur', 'kamalesh', NULL, 7, 1, '0000-00-00 00:00:00', 'In Transit', '', '2026-06-27 08:44:34', '2026-06-27 08:44:34'),
-(5, 'kolkata', 'ok', NULL, 6, 1, '0000-00-00 00:00:00', 'Delayed', '', '2026-06-27 08:48:04', '2026-06-27 08:48:04');
+INSERT INTO `shipments` (`id`, `tracking_id`, `destination`, `client`, `weight`, `driver_id`, `vehicle_id`, `eta`, `status`, `notes`, `created_at`, `updated_at`) VALUES
+(1, 'TRK-0001', 'udaipur', 'kartikey', '50', 9, 1, '2026-06-23 14:41:00', 'Delivered', 'ok', '2026-06-27 06:43:03', '2026-06-27 10:03:55'),
+(2, 'TRK-0002', 'jodhpur', 'aun', '90', 8, 1, '2026-06-29 15:49:00', 'Delivered', '', '2026-06-27 08:19:37', '2026-06-27 10:03:55'),
+(3, 'TRK-0003', 'jaipur', '', '900', 4, 1, '2026-06-30 08:38:00', 'In Transit', 'xsxs', '2026-06-27 08:38:11', '2026-06-27 10:03:55'),
+(4, 'TRK-0004', 'jaipur', 'kamalesh', '12000', 7, 1, '0000-00-00 00:00:00', 'In Transit', '', '2026-06-27 08:44:34', '2026-06-27 10:03:55'),
+(5, 'TRK-0005', 'kolkata', 'ok', '10000', 6, 1, '0000-00-00 00:00:00', 'Delayed', '', '2026-06-27 08:48:04', '2026-06-27 10:03:55');
 
 -- --------------------------------------------------------
 

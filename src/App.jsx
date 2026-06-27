@@ -6,28 +6,30 @@ import Home from "../web/src/pages/admin/dashboard/Home.jsx";
 import LiveMap from "../web/src/pages/admin/dashboard/live-map.jsx";
 import FleetStatus from "../web/src/pages/admin/dashboard/fleetstatus.jsx";
 
-// 🚛 FLEET MANAGEMENT MODULE IMPORTS (Fixed folder typo 'fleet managemeent')
-
+// 🚛 FLEET MANAGEMENT MODULE IMPORTS
 import DriverShow from "../web/src/pages/admin/fleet managemeent/driverlist.jsx";
-import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx"; // Check if your file is 'driverassigment' (missing the second 'n')
-
+import DriverShipment from "../web/src/pages/admin/fleet managemeent/driverassigment.jsx";
 import MaintenanceLogs from "../web/src/pages/admin/fleet managemeent/maintenancelogs.jsx";
 import DriverViewModal from "../web/src/pages/admin/fleet managemeent/driverviewmodal.jsx"; 
-import DriverEditView  from "../web/src/pages/admin/fleet managemeent/drivereditview.jsx"; // Import the Edit component
+import DriverEditView from "../web/src/pages/admin/fleet managemeent/drivereditview.jsx";
 import VehicleList from "../web/src/pages/admin/fleet managemeent/VehicleList.jsx";
 import VehicleView from "../web/src/pages/admin/fleet managemeent/vehicleview.jsx";
 import VehicleEdit from "../web/src/pages/admin/fleet managemeent/vehicleedit.jsx";
+
 // 📦 SHIPMENT MODULE IMPORTS
-// import NewShipment from '../web/src/pages/admin/shipment/newshipment.jsx'; // ❌ FILE DOESN'T EXIST
 import DelayedShipments from '../web/src/pages/admin/shipment/delayedshipments.jsx';
 import AllShipments from "../web/src/pages/admin/shipment/allshipments.jsx"; 
 import Track from "../web/src/pages/admin/shipment/track.jsx"; 
 
-// 🔐 AUTHENTICATION & SETTINGS IMPORTS (Fixed lower-case filenames)
-import Logout from '../web/src/pages/logout.jsx';
-import Settings from '../web/src/pages/admin/settings.jsx'; 
-import Login from '../web/src/pages/login.jsx';
-import Sign from '../web/src/pages/sign.jsx';
+// 🔐 AUTHENTICATION & SETTINGS IMPORTS
+import Logout from "../web/src/pages/logout.jsx";
+import Settings from "../web/src/pages/admin/settings.jsx"; 
+import Login from "../web/src/pages/login.jsx";
+import Sign from "../web/src/pages/sign.jsx";
+import DriverDashboard from "../web/src/pages/driver/DriverDashboard.jsx";
+
+// 🔴 IMPORT ProtectedRoute
+import ProtectedRoute from "../web/src/components/ProtectedRoute.jsx";
 
 import './App.css';
 
@@ -52,31 +54,117 @@ function App() {
       <Routes>
         {/* 🎯 AUTHENTICATION MODULE */}
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Sign />} />
         <Route path="/logout" element={<Logout />} />
 
-        {/* 📊 CORE OPERATIONAL DASHBOARD */}
-        <Route path="/dashboard" element={<DashboardLayout><Home /></DashboardLayout>} />
-        <Route path="/live-map" element={<DashboardLayout><LiveMap /></DashboardLayout>} />
+        {/* 📊 CORE OPERATIONAL DASHBOARD - Admin Routes */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><Home /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/live-map" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><LiveMap /></DashboardLayout>
+          </ProtectedRoute>
+        } />
 
-        {/* 🚛 FLEET MANAGEMENT MODULE */}
-        <Route path="/drivers" element={<DashboardLayout><DriverShipment /></DashboardLayout>} />
-        <Route path="/drivershow" element={<DashboardLayout><DriverShow /></DashboardLayout>} />
-        <Route path="/fleet" element={<DashboardLayout><VehicleList /></DashboardLayout>} />
-        <Route path="/maintenance" element={<DashboardLayout><MaintenanceLogs /></DashboardLayout>} />
-        <Route path="/fleet-status" element={<DashboardLayout><FleetStatus /></DashboardLayout>} /> 
-        <Route path="/vehicles" element={<DashboardLayout><VehicleList /></DashboardLayout>} />
-        <Route path="/vehicle-view/:id?" element={<DashboardLayout><VehicleView /></DashboardLayout>} /> 
-        <Route path="/vehicle-edit/:id?" element={<DashboardLayout><VehicleEdit /></DashboardLayout>} />
-        {/* 📦 SHIPMENTS MANAGEMENT MODULE */}
-        <Route path="/shipments" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
-        <Route path="/delayed" element={<DashboardLayout><DelayedShipments /></DashboardLayout>} />
-        <Route path="/track" element={<DashboardLayout><Track /></DashboardLayout>} />
-        <Route path="/new-shipment" element={<DashboardLayout><AllShipments /></DashboardLayout>} />
-        <Route path="/create-shipment" element={<DashboardLayout><AllShipments /></DashboardLayout>} /> 
+        {/* 🚛 FLEET MANAGEMENT MODULE - Admin Routes */}
+        <Route path="/drivers" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><DriverShipment /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/drivershow" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><DriverShow /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/fleet" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><VehicleList /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/maintenance" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><MaintenanceLogs /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/fleet-status" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><FleetStatus /></DashboardLayout>
+          </ProtectedRoute>
+        } /> 
+        
+        <Route path="/vehicles" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><VehicleList /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/vehicle-view/:id?" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><VehicleView /></DashboardLayout>
+          </ProtectedRoute>
+        } /> 
+        
+        <Route path="/vehicle-edit/:id?" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><VehicleEdit /></DashboardLayout>
+          </ProtectedRoute>
+        } />
 
-        {/* 🟢 SETTINGS MODULE */}
-        <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+        {/* 📦 SHIPMENTS MANAGEMENT MODULE - Admin Routes */}
+        <Route path="/shipments" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><AllShipments /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/delayed" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><DelayedShipments /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/track" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><Track /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/new-shipment" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><AllShipments /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/create-shipment" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><AllShipments /></DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* 🚛 DRIVER DASHBOARD - Driver Routes */}
+        {/* ✅ DriverDashboard is standalone - it has its own sidebar */}
+        <Route path="/driver-dashboard" element={
+          <ProtectedRoute requiredRole="driver">
+            <DriverDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* 🟢 SETTINGS MODULE - Admin Routes */}
+        <Route path="/settings" element={
+          <ProtectedRoute requiredRole="admin">
+            <DashboardLayout><Settings /></DashboardLayout>
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

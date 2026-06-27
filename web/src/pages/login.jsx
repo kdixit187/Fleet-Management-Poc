@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom'; // पहले से इम्पोर्टेड है
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Form = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  // Controlled component state initialization
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -20,14 +19,58 @@ const Form = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // CargoMax Strict Verification Logic
+    setLoading(true);
+
+    // TEMPORARY - Admin login (Remove when backend is ready)
     if (credentials.email === 'admin' && credentials.password === '12345') {
-      navigate('/dashboard');
-    } else {
-      alert('Invalid Credentials! Identity Verified Username: admin, Password: 12345 use karein.');
+      localStorage.setItem('token', 'demo-token');
+      localStorage.setItem('userRole', 'admin');
+      localStorage.setItem('userName', 'Admin User');
+      navigate('/dashboard');  // 🔴 Admin Dashboard
+      setLoading(false);
+      return;
+    }
+
+    // TEMPORARY - Driver login (Remove when backend is ready)
+    if (credentials.email === 'driver' && credentials.password === '12345') {
+      localStorage.setItem('token', 'demo-token');
+      localStorage.setItem('userRole', 'driver');
+      localStorage.setItem('userName', 'Driver User');
+      navigate('/driver-dashboard');  // 🔴 Driver Dashboard
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userRole', data.role || 'driver');
+        localStorage.setItem('userName', data.driver?.name || 'User');
+        localStorage.setItem('userEmail', data.driver?.email || '');
+
+        // 🔴 Role based redirect
+        if (data.role === 'admin') {
+          navigate('/dashboard');  // 🔴 Admin Dashboard
+        } else {
+          navigate('/driver-dashboard');  // 🔴 Driver Dashboard
+        }
+      } else {
+        alert(data.message || 'Login failed!');
+      }
+    } catch (error) {
+      alert('सर्वर से कनेक्ट नहीं हो पा रहा है। कृपया बाद में प्रयास करें।');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,6 +93,7 @@ const Form = () => {
               value={credentials.email}
               onChange={handleChange}
               required
+              disabled={loading}
             />
           </div>
 
@@ -63,15 +107,26 @@ const Form = () => {
               value={credentials.password}
               onChange={handleChange}
               required
+              disabled={loading}
             />
           </div>
-          <button type="submit" className="form-btn">Login</button>
+          
+          <button 
+            type="submit" 
+            className="form-btn"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
         </form>
-       
       </div>
     </StyledWrapper>
   );
 }
+
+
+
+// ... rest of your styled components remain the same
 
 const StyledWrapper = styled.div`
   min-height: 100vh;
@@ -93,13 +148,13 @@ const StyledWrapper = styled.div`
   .form-container {
     width: 100%;
     max-width: 420px;
-    background-color: #ffffff; /* डार्क बैकग्राउंड पर व्हाइट कार्ड सबसे अच्छा लगेगा */
+    background-color: #ffffff;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
     box-sizing: border-box;
     padding: 48px 36px;
-    backdrop-filter: blur(8px); /* कार्ड के पीछे हल्का ब्लर इफेक्ट */
+    backdrop-filter: blur(8px);
   }
 
   .branding-container {
@@ -162,6 +217,11 @@ const StyledWrapper = styled.div`
     box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.05);
   }
 
+  .input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
   .page-link {
     margin: -10px 0 0 0;
     text-align: end;
@@ -192,12 +252,17 @@ const StyledWrapper = styled.div`
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
   }
 
-  .form-btn:hover {
+  .form-btn:hover:not(:disabled) {
     background: #4338ca;
   }
 
-  .form-btn:active {
+  .form-btn:active:not(:disabled) {
     transform: scale(0.98);
+  }
+
+  .form-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .sign-up-label {
@@ -284,4 +349,5 @@ const StyledWrapper = styled.div`
     font-size: 18px;
   }
 `;
+
 export default Form;
