@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const Form = () => {
       localStorage.setItem('token', 'demo-token');
       localStorage.setItem('userRole', 'admin');
       localStorage.setItem('userName', 'Admin User');
-      navigate('/dashboard');  // 🔴 Admin Dashboard
+      navigate('/dashboard');
       setLoading(false);
       return;
     }
@@ -38,13 +38,13 @@ const Form = () => {
       localStorage.setItem('token', 'demo-token');
       localStorage.setItem('userRole', 'driver');
       localStorage.setItem('userName', 'Driver User');
-      navigate('/driver-dashboard');  // 🔴 Driver Dashboard
+      navigate('/driver-dashboard');
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
@@ -55,14 +55,16 @@ const Form = () => {
       if (data.success) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', data.role || 'driver');
-        localStorage.setItem('userName', data.driver?.name || 'User');
-        localStorage.setItem('userEmail', data.driver?.email || '');
+        // ✅ FIXED: Use data.user instead of data.driver
+        localStorage.setItem('userName', data.user?.name || 'User');
+        localStorage.setItem('userEmail', data.user?.email || '');
+        localStorage.setItem('userId', data.user?.id || '');
 
-        // 🔴 Role based redirect
+        // Role based redirect
         if (data.role === 'admin') {
-          navigate('/dashboard');  // 🔴 Admin Dashboard
+          navigate('/dashboard');
         } else {
-          navigate('/driver-dashboard');  // 🔴 Driver Dashboard
+          navigate('/driver-dashboard');
         }
       } else {
         alert(data.message || 'Login failed!');
@@ -89,7 +91,7 @@ const Form = () => {
               type="text" 
               name="email"
               className="input" 
-              placeholder="Enter user name" 
+              placeholder="Enter email" 
               value={credentials.email}
               onChange={handleChange}
               required
@@ -122,11 +124,7 @@ const Form = () => {
       </div>
     </StyledWrapper>
   );
-}
-
-
-
-// ... rest of your styled components remain the same
+};
 
 const StyledWrapper = styled.div`
   min-height: 100vh;
@@ -134,7 +132,6 @@ const StyledWrapper = styled.div`
   justify-content: center;
   align-items: center;
   
-  /* --- बैकग्राउंड इमेज सेटिंग्स --- */
   background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
                     url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop');
   background-size: cover;
@@ -222,22 +219,6 @@ const StyledWrapper = styled.div`
     cursor: not-allowed;
   }
 
-  .page-link {
-    margin: -10px 0 0 0;
-    text-align: end;
-  }
-
-  .page-link-label {
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    color: #64748b;
-  }
-
-  .page-link-label:hover {
-    color: #4f46e5;
-  }
-
   .form-btn {
     padding: 14px;
     border-radius: 12px;
@@ -263,90 +244,6 @@ const StyledWrapper = styled.div`
   .form-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-  }
-
-  .sign-up-label {
-    text-align: center;
-    margin: 0 0 24px 0;
-    font-size: 13px;
-    color: #64748b;
-    font-weight: 500;
-  }
-
-  .sign-up-link {
-    margin-left: 3px;
-    color: #4f46e5;
-    cursor: pointer;
-    font-weight: 700;
-    text-decoration: none;
-  }
-  
-  .sign-up-link:hover {
-    text-decoration: underline;
-  }
-
-  .separator {
-    text-align: center;
-    border-bottom: 1px solid #e2e8f0;
-    line-height: 0.1em;
-    margin: 10px 0 24px 0;
-  }
-
-  .separator span {
-    background: #fff;
-    padding: 0 10px;
-    color: #94a3b8;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .buttons-container {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-  }
-
-  .apple-login-button,
-  .google-login-button {
-    flex: 1;
-    border-radius: 12px;
-    box-sizing: border-box;
-    padding: 12px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 13px;
-    font-weight: 600;
-    gap: 8px;
-    transition: all 0.2s ease;
-  }
-
-  .apple-login-button {
-    background-color: #0f172a;
-    color: #fff;
-    border: 1px solid #0f172a;
-  }
-
-  .apple-login-button:hover {
-    background-color: #020617;
-  }
-
-  .google-login-button {
-    background-color: #ffffff;
-    color: #334155;
-    border: 1px solid #e2e8f0;
-  }
-
-  .google-login-button:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e1;
-  }
-
-  .apple-icon,
-  .google-icon {
-    font-size: 18px;
   }
 `;
 

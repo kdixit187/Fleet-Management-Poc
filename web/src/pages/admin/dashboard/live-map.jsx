@@ -2,166 +2,204 @@ import React, { useState, useEffect, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 export default function LiveMap() {
-  const [selectedVehicle, setSelectedVehicle] = useState('TRK-4022');
+  const [selectedVehicle, setSelectedVehicle] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [shipments, setShipments] = useState([]);
   const [drivers, setDrivers] = useState([]);
 
-  // ==================== API CALLS ====================
   const API_BASE = 'http://localhost:5000/api';
 
+  // ==================== API CALLS ====================
   useEffect(() => {
-    fetchVehicles();
-    fetchShipments();
-    fetchDrivers();
+    loadAllData();
   }, []);
+
+  const loadAllData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await Promise.all([
+        fetchVehicles(),
+        fetchShipments(),
+        fetchDrivers()
+      ]);
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError('Failed to load data. Please check if backend is running.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchVehicles = async () => {
     try {
       const response = await fetch(`${API_BASE}/vehicles`);
+      if (!response.ok) throw new Error('Failed to fetch vehicles');
       const data = await response.json();
-      if (response.ok) {
-        setVehicles(data);
-      }
+      console.log('Vehicles:', data);
+      setVehicles(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching vehicles:', error);
+      setVehicles([]);
     }
   };
 
   const fetchShipments = async () => {
     try {
       const response = await fetch(`${API_BASE}/shipments`);
+      if (!response.ok) throw new Error('Failed to fetch shipments');
       const data = await response.json();
-      if (response.ok) {
-        setShipments(data);
-      }
+      console.log('Shipments:', data);
+      // Handle both formats
+      const shipmentsData = Array.isArray(data) ? data : (data.data || []);
+      setShipments(shipmentsData);
     } catch (error) {
       console.error('Error fetching shipments:', error);
+      setShipments([]);
     }
   };
 
   const fetchDrivers = async () => {
     try {
       const response = await fetch(`${API_BASE}/drivers`);
+      if (!response.ok) throw new Error('Failed to fetch drivers');
       const data = await response.json();
-      if (response.ok) {
-        setDrivers(data.data || []);
-      }
+      console.log('Drivers:', data);
+      const driversData = data.success ? data.data : (Array.isArray(data) ? data : []);
+      setDrivers(driversData);
     } catch (error) {
       console.error('Error fetching drivers:', error);
+      setDrivers([]);
     }
   };
 
   // ==================== HELPERS ====================
   const getDriverName = (driverId) => {
+    if (!driverId) return 'Unassigned';
     const driver = drivers.find(d => d.id === driverId);
     return driver ? driver.full_name : 'Unknown';
   };
 
   const getVehicleStatus = (vehicleId) => {
-    const shipment = shipments.find(s => s.vehicle_id === vehicleId);
-    return shipment ? shipment.status : 'Available';
+    const shipment = shipments.find(s => 
+      s.vehicle_id === vehicleId || 
+      s.vehicle_id === parseInt(vehicleId) ||
+      s.vehicle_id === String(vehicleId)
+    );
+    if (!shipment) return 'Available';
+    
+    const statusMap = {
+      'delivered': 'Completed',
+      'Delivered': 'Completed',
+      'in_transit': 'On Time',
+      'In Transit': 'On Time',
+      'delayed': 'Delayed',
+      'Delayed': 'Delayed',
+      'alert': 'Critical',
+      'Alert': 'Critical',
+      'loading': 'Loading',
+      'Loading': 'Loading'
+    };
+    return statusMap[shipment.status] || shipment.status || 'Available';
   };
 
   const getVehicleRoute = (vehicleId) => {
-    const shipment = shipments.find(s => s.vehicle_id === vehicleId);
+    const shipment = shipments.find(s => 
+      s.vehicle_id === vehicleId || 
+      s.vehicle_id === parseInt(vehicleId) ||
+      s.vehicle_id === String(vehicleId)
+    );
     return shipment ? shipment.destination : 'N/A';
   };
 
   const getVehicleETA = (vehicleId) => {
-    const shipment = shipments.find(s => s.vehicle_id === vehicleId);
+    const shipment = shipments.find(s => 
+      s.vehicle_id === vehicleId || 
+      s.vehicle_id === parseInt(vehicleId) ||
+      s.vehicle_id === String(vehicleId)
+    );
     if (shipment && shipment.eta) {
       const date = new Date(shipment.eta);
-      return date.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      });
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
+      return shipment.eta;
     }
     return 'N/A';
   };
 
   // ==================== MAP VEHICLES DATA ====================
   const liveVehicles = useMemo(() => {
-    if (vehicles.length === 0) {
-      // Fallback data if no vehicles from API
+    console.log('Generating live vehicles from:', { vehicles, shipments, drivers });
+    
+    // If no vehicles, use fallback data
+    if (!vehicles || vehicles.length === 0) {
       return [
-        { id: 'TRK-4022', driver: 'Rajesh Kumar', route: 'Mumbai → Delhi', startCity: 'Mumbai', endCity: 'Delhi', status: 'On Time', load: '14', speed: '68', eta: '4 hrs', pct: '65%' },
-        { id: 'TRK-8819', driver: 'Amit Sharma', route: 'Jaipur → Udaipur', startCity: 'Jaipur', endCity: 'Udaipur', status: 'Delayed', load: '18', speed: '52', eta: '5 hrs', pct: '40%' },
-        { id: 'TRK-1092', driver: 'Vikram Singh', route: 'Ahmedabad → Bhilwara', startCity: 'Ahmedabad', endCity: 'Bhilwara', status: 'On Time', load: '12', speed: '72', eta: '2 hrs', pct: '75%' },
-        { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', startCity: 'Delhi', endCity: 'Chandigarh', status: 'Critical', load: '22', speed: '0', eta: 'N/A', pct: '25%' },
+        { id: 'TRK-4022', driver: 'Rajesh Kumar', route: 'Mumbai → Delhi', startCity: 'Mumbai', endCity: 'Delhi', status: 'On Time', load: '14', speed: 68, eta: '4 hrs', pct: '65%' },
+        { id: 'TRK-8819', driver: 'Amit Sharma', route: 'Jaipur → Udaipur', startCity: 'Jaipur', endCity: 'Udaipur', status: 'Delayed', load: '18', speed: 52, eta: '5 hrs', pct: '40%' },
+        { id: 'TRK-1092', driver: 'Vikram Singh', route: 'Ahmedabad → Bhilwara', startCity: 'Ahmedabad', endCity: 'Bhilwara', status: 'On Time', load: '12', speed: 72, eta: '2 hrs', pct: '75%' },
+        { id: 'TRK-5541', driver: 'Sanjay Dutt', route: 'Delhi → Chandigarh', startCity: 'Delhi', endCity: 'Chandigarh', status: 'Critical', load: '22', speed: 0, eta: 'N/A', pct: '25%' },
       ];
     }
 
     return vehicles.map((vehicle, index) => {
-      const status = getVehicleStatus(vehicle.id);
-      const route = getVehicleRoute(vehicle.id);
+      const vehicleId = vehicle.vehicle_id || vehicle.id || `VH-${index}`;
+      const status = getVehicleStatus(vehicleId);
+      const route = getVehicleRoute(vehicleId);
       const driverName = getDriverName(vehicle.driver_id) || 'Unassigned';
       
-      // Map status to display status
-      let displayStatus = 'On Time';
-      let statusColor = 'var(--success)';
+      let displayStatus = status;
       let pct = '50%';
       
-      if (status === 'Delivered') {
-        displayStatus = 'Completed';
-        statusColor = 'var(--success)';
-        pct = '100%';
-      } else if (status === 'In Transit') {
-        displayStatus = 'On Time';
-        statusColor = 'var(--success)';
-        pct = '65%';
-      } else if (status === 'Delayed') {
-        displayStatus = 'Delayed';
-        statusColor = 'var(--warning)';
-        pct = '40%';
-      } else if (status === 'Alert') {
-        displayStatus = 'Critical';
-        statusColor = 'var(--danger)';
-        pct = '25%';
-      } else if (status === 'Loading') {
-        displayStatus = 'Loading';
-        statusColor = 'var(--info)';
-        pct = '30%';
-      }
+      if (status === 'Completed') pct = '100%';
+      else if (status === 'On Time') pct = '65%';
+      else if (status === 'Delayed') pct = '40%';
+      else if (status === 'Critical') pct = '25%';
+      else if (status === 'Loading') pct = '30%';
 
       return {
-        id: vehicle.vehicle_id || vehicle.id,
+        id: vehicleId,
         driver: driverName,
-        route: `${vehicle.company_name || 'N/A'} → ${route}`,
-        startCity: vehicle.company_name || 'N/A',
-        endCity: route || 'N/A',
+        route: `${vehicle.company_name || 'Start'} → ${route}`,
+        startCity: vehicle.company_name || 'Start',
+        endCity: route || 'Destination',
         status: displayStatus,
-        load: '12',
+        load: Math.floor(Math.random() * 10 + 10).toString(),
         speed: Math.floor(Math.random() * 40 + 40),
-        eta: getVehicleETA(vehicle.id),
+        eta: getVehicleETA(vehicleId),
         pct: pct,
-        statusColor: statusColor
       };
     });
   }, [vehicles, shipments, drivers]);
 
-  // Map coordinates for vehicles
+  // Map coordinates
   const mapCoordinates = useMemo(() => {
     const coords = {};
+    const positions = [
+      { top: "42%", left: "46%", path: "M 80 320 Q 240 120, 420 220 T 720 100", startPos: { bottom: "18%", left: "8%" }, endPos: { top: "18%", right: "12%" } },
+      { top: "58%", left: "32%", path: "M 120 150 L 320 340", startPos: { top: "30%", left: "15%" }, endPos: { bottom: "25%", left: "38%" } },
+      { top: "72%", left: "22%", path: "M 40 410 Q 120 380, 240 310", startPos: { bottom: "10%", left: "5%" }, endPos: { bottom: "35%", left: "28%" } },
+      { top: "24%", left: "62%", path: "M 380 110 L 620 40", startPos: { top: "22%", left: "45%" }, endPos: { top: "10%", right: "25%" } },
+      { top: "35%", left: "55%", path: "M 200 200 Q 400 100, 600 300", startPos: { top: "15%", left: "25%" }, endPos: { bottom: "30%", right: "15%" } },
+      { top: "65%", left: "45%", path: "M 100 500 Q 300 400, 500 500", startPos: { bottom: "10%", left: "15%" }, endPos: { bottom: "20%", right: "20%" } },
+    ];
+
     liveVehicles.forEach((v, index) => {
-      const positions = [
-        { top: "42%", left: "46%", path: "M 80 320 Q 240 120, 420 220 T 720 100", startPos: { bottom: "18%", left: "8%" }, endPos: { top: "18%", right: "12%" } },
-        { top: "58%", left: "32%", path: "M 120 150 L 320 340", startPos: { top: "30%", left: "15%" }, endPos: { bottom: "25%", left: "38%" } },
-        { top: "72%", left: "22%", path: "M 40 410 Q 120 380, 240 310", startPos: { bottom: "10%", left: "5%" }, endPos: { bottom: "35%", left: "28%" } },
-        { top: "24%", left: "62%", path: "M 380 110 L 620 40", startPos: { top: "22%", left: "45%" }, endPos: { top: "10%", right: "25%" } },
-        { top: "35%", left: "55%", path: "M 200 200 Q 400 100, 600 300", startPos: { top: "15%", left: "25%" }, endPos: { bottom: "30%", right: "15%" } },
-        { top: "65%", left: "45%", path: "M 100 500 Q 300 400, 500 500", startPos: { bottom: "10%", left: "15%" }, endPos: { bottom: "20%", right: "20%" } },
-      ];
+      const theme = v.status === 'Completed' ? 'var(--success)' : 
+                    v.status === 'On Time' ? 'var(--success)' : 
+                    v.status === 'Delayed' ? 'var(--warning)' : 
+                    v.status === 'Critical' ? 'var(--danger)' : 'var(--info)';
       coords[v.id] = {
         ...positions[index % positions.length],
-        theme: v.status === 'Completed' ? 'var(--success)' : 
-               v.status === 'On Time' ? 'var(--success)' : 
-               v.status === 'Delayed' ? 'var(--warning)' : 
-               v.status === 'Critical' ? 'var(--danger)' : 'var(--info)'
+        theme: theme
       };
     });
     return coords;
@@ -182,6 +220,13 @@ export default function LiveMap() {
     });
   }, [searchQuery, statusFilter, liveVehicles]);
 
+  // Set first vehicle as selected when data loads
+  useEffect(() => {
+    if (liveVehicles.length > 0 && !selectedVehicle) {
+      setSelectedVehicle(liveVehicles[0].id);
+    }
+  }, [liveVehicles, selectedVehicle]);
+
   const currentVehicleData = liveVehicles.find(v => v.id === selectedVehicle) || liveVehicles[0] || {};
   const telemetry = mapCoordinates[currentVehicleData.id] || mapCoordinates[liveVehicles[0]?.id] || {};
 
@@ -190,9 +235,38 @@ export default function LiveMap() {
   const delayedCount = liveVehicles.filter(v => v.status === 'Delayed').length;
   const criticalCount = liveVehicles.filter(v => v.status === 'Critical').length;
 
+  // ==================== LOADING STATE ====================
+  if (loading) {
+    return (
+      <ContainerWrapper>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <h2>🔄 Loading Fleet Data...</h2>
+          <p>Please wait while we fetch the latest information.</p>
+        </div>
+      </ContainerWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <ContainerWrapper>
+        <div style={{ textAlign: 'center', padding: '50px', color: '#dc2626' }}>
+          <h2>❌ Error Loading Data</h2>
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{ padding: '10px 20px', marginTop: '10px', cursor: 'pointer' }}
+          >
+            Retry
+          </button>
+        </div>
+      </ContainerWrapper>
+    );
+  }
+
+  // ==================== RENDER ====================
   return (
     <ContainerWrapper>
-      {/* Header */}
       <HeaderSection>
         <div>
           <h2>📍 Live-Status Dashboard</h2>
@@ -205,15 +279,14 @@ export default function LiveMap() {
         </Toolbar>
       </HeaderSection>
 
-      {/* KPI Metrics */}
       <MetricsRow>
         <KpiCard border="var(--primary)">
           <p className="kpi-title">Total Assets Index</p>
-          <h3>{vehicles.length} Trucks</h3>
+          <h3>{vehicles.length || liveVehicles.length} Trucks</h3>
         </KpiCard>
         <KpiCard border="var(--success)">
           <p className="kpi-title">Available (Ready)</p>
-          <h3 className="text-success">{liveVehicles.filter(v => v.status === 'On Time' || v.status === 'Completed').length} Active</h3>
+          <h3 className="text-success">{onTimeCount} Active</h3>
         </KpiCard>
         <KpiCard border="var(--info)">
           <p className="kpi-title">In Transit (On Duty)</p>
@@ -221,13 +294,11 @@ export default function LiveMap() {
         </KpiCard>
         <KpiCard border="var(--warning)">
           <p className="kpi-title">Under Maintenance</p>
-          <h3 className="text-warning">{liveVehicles.filter(v => v.status === 'Delayed' || v.status === 'Critical').length} Workshop</h3>
+          <h3 className="text-warning">{delayedCount + criticalCount} Workshop</h3>
         </KpiCard>
       </MetricsRow>
 
-      {/* Main Layout */}
       <MainGridLayout>
-        {/* Sidebar */}
         <SidebarCard>
           <div className="card-header-custom">
             <h6>
@@ -333,7 +404,6 @@ export default function LiveMap() {
           </SidebarFooterMetricsGroup>
         </SidebarCard>
 
-        {/* Map */}
         <MapDisplayCard>
           <CanvasContainer>
             <SvgViewSpace id="mapSvgCanvas">
@@ -404,7 +474,7 @@ export default function LiveMap() {
               </div>
               <div className="hud-metric-unit-item border-left-split">
                 <span className="lbl">Timeline ETA</span>
-                <span className="val text-success">{currentVehicleData.eta || 'N/A'} <span className="unit"></span></span>
+                <span className="val text-success">{currentVehicleData.eta || 'N/A'}</span>
               </div>
               <div className="hud-metric-unit-item border-left-split">
                 <span className="lbl">Net Load Capacity</span>
@@ -418,6 +488,9 @@ export default function LiveMap() {
   );
 }
 
+// ==================== STYLED COMPONENTS ====================
+// (Keep all your existing styled components exactly as they are)
+// ... all the styled components remain the same ...
 // ==================== STYLED COMPONENTS ====================
 
 const alphaBlink = keyframes`
