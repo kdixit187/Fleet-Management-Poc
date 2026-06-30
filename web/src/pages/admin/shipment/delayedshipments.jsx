@@ -37,9 +37,11 @@ export default function DelayedShipments() {
       if (shipmentRes.ok) {
         setDrivers(driverData.data || []);
         setVehicles(vehicleData || []);
-        
+
+        const shipments = shipmentData.data || [];
+
         // Filter delayed shipments
-        const delayed = shipmentData.filter(s => 
+        const delayed = shipments.filter(s =>
           s.status === 'Delayed' || s.status === 'Alert'
         );
         
