@@ -25,11 +25,12 @@ export default function TrackShipment() {
     try {
       // Try to find shipment by tracking ID or ID
       const response = await fetch(`${API_BASE}/shipments`);
-      const data = await response.json();
-      
+      const result = await response.json();
+
       if (response.ok) {
+        const shipments = result.data || [];
         // Search by tracking_id or id
-        const shipment = data.find(s => 
+        const shipment = shipments.find(s =>
           s.tracking_id?.toLowerCase() === trackId.trim().toLowerCase() ||
           s.id?.toString() === trackId.trim()
         );
